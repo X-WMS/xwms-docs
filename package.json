@@ -3,7 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev --extends docus",
-    "build": "nuxt build --extends docus"
+    "build": "nuxt build --extends docus",
+    "generate": "nuxt generate"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",
