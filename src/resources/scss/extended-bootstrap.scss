@@ -1,0 +1,177 @@
+/* Uitgebreide Bootstrap CSS-extensie */
+
+@use "sass:math";
+@use "sass:string";
+
+
+:root, html, body {
+    --spacer: 1rem;
+}
+
+/* Extra padding classes */
+@for $i from 6 through 50 {
+    .p-#{$i} { padding: calc(var(--spacer) * #{$i}) !important; }
+    .pt-#{$i} { padding-top: calc(var(--spacer) * #{$i}) !important; }
+    .pb-#{$i} { padding-bottom: calc(var(--spacer) * #{$i}) !important; }
+    .ps-#{$i} { padding-left: calc(var(--spacer) * #{$i}) !important; }
+    .pe-#{$i} { padding-right: calc(var(--spacer) * #{$i}) !important; }
+    .px-#{$i} { padding-left: calc(var(--spacer) * #{$i}) !important; padding-right: calc(var(--spacer) * #{$i}) !important; }
+    .py-#{$i} { padding-top: calc(var(--spacer) * #{$i}) !important; padding-bottom: calc(var(--spacer) * #{$i}) !important; }
+}
+
+/* Extra margin classes */
+@for $i from 6 through 50 {
+    .m-#{$i} { margin: calc(var(--spacer) * #{$i}) !important; }
+    .mt-#{$i} { margin-top: calc(var(--spacer) * #{$i}) !important; }
+    .mb-#{$i} { margin-bottom: calc(var(--spacer) * #{$i}) !important; }
+    .ms-#{$i} { margin-left: calc(var(--spacer) * #{$i}) !important; }
+    .me-#{$i} { margin-right: calc(var(--spacer) * #{$i}) !important; }
+    .mx-#{$i} { margin-left: calc(var(--spacer) * #{$i}) !important; margin-right: calc(var(--spacer) * #{$i}) !important; }
+    .my-#{$i} { margin-top: calc(var(--spacer) * #{$i}) !important; margin-bottom: calc(var(--spacer) * #{$i}) !important; }
+}
+
+/* Negatieve margins */
+@for $i from 6 through 50 {
+    .m-n#{$i} { margin: calc(var(--spacer) * -#{$i}) !important; }
+    .mt-n#{$i} { margin-top: calc(var(--spacer) * -#{$i}) !important; }
+    .mb-n#{$i} { margin-bottom: calc(var(--spacer) * -#{$i}) !important; }
+    .ms-n#{$i} { margin-left: calc(var(--spacer) * -#{$i}) !important; }
+    .me-n#{$i} { margin-right: calc(var(--spacer) * -#{$i}) !important; }
+    .mx-n#{$i} { margin-left: calc(var(--spacer) * -#{$i}) !important; margin-right: calc(var(--spacer) * -#{$i}) !important; }
+    .my-n#{$i} { margin-top: calc(var(--spacer) * -#{$i}) !important; margin-bottom: calc(var(--spacer) * -#{$i}) !important; }
+}
+
+/* Fijne schaalverdeling (0.1 t/m 5.9) */
+@for $i from 0 through 5 {
+    @for $j from 1 through 9 {
+        .p-#{$i}_#{$j} { padding: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .pt-#{$i}_#{$j} { padding-top: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .pb-#{$i}_#{$j} { padding-bottom: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .ps-#{$i}_#{$j} { padding-left: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .pe-#{$i}_#{$j} { padding-right: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .px-#{$i}_#{$j} { padding-left: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; padding-right: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .py-#{$i}_#{$j} { padding-top: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; padding-bottom: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+
+        .m-#{$i}_#{$j} { margin: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .mt-#{$i}_#{$j} { margin-top: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .mb-#{$i}_#{$j} { margin-bottom: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .ms-#{$i}_#{$j} { margin-left: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .me-#{$i}_#{$j} { margin-right: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .mx-#{$i}_#{$j} { margin-left: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; margin-right: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+        .my-#{$i}_#{$j} { margin-top: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; margin-bottom: calc(var(--spacer) * #{$i} + (var(--spacer) * (#{$j} / 10))) !important; }
+    }
+}
+
+
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px,
+  x3l: 1600px,
+  x4l: 1800px,
+  x5l: 2200px,
+  x6l: 2600px,
+  x7l: 3000px
+);
+
+@each $breakpoint, $value in $grid-breakpoints {
+@media (min-width: #{$value}) {
+    @for $i from 1 through 12 {
+        .col-#{$breakpoint}-#{$i} {
+            -webkit-box-flex: 0;
+            -ms-flex: 0 0 auto;
+            flex: 0 0 auto;
+            width: calc(#{math.div($i, 12)} * 100%) !important;
+        }
+    }
+
+    // Display helpers
+    .d-#{$breakpoint}-none { display: none !important; }
+    .d-#{$breakpoint}-block { display: block !important; }
+    .d-#{$breakpoint}-flex { display: flex !important; }
+    .d-#{$breakpoint}-grid { display: grid !important; }
+
+    // Gaps
+    @for $i from 0 through 10 {
+        .g-#{$breakpoint}-#{$i} {
+          gap: calc(var(--spacer) * #{$i}) !important;
+        }
+      }
+
+    // Width utility classes (10% tot 100%)
+    @for $i from 1 through 10 {
+        $val: $i * 10;
+        .w-#{$breakpoint}-#{$val} {
+          width: #{$val}#{'%'} !important;
+        }
+      }
+    
+    // Height utility classes (10vh tot 100vh)
+    @for $i from 1 through 10 {
+        $val: $i * 10;
+        .h-#{$breakpoint}-#{$val} {
+          height: #{$val}vh !important;
+        }
+      }
+  
+      
+
+    @for $i from 6 through 50 {
+        .my-#{$i} { margin-top: calc(var(--spacer) * #{$i}) !important; margin-bottom: calc(var(--spacer) * #{$i}) !important; }
+        .py-#{$i} { padding-top: calc(var(--spacer) * #{$i}) !important; padding-bottom: calc(var(--spacer) * #{$i}) !important; }
+      
+        .mx-#{$i} { margin-left: calc(var(--spacer) * #{$i}) !important; margin-right: calc(var(--spacer) * #{$i}) !important; }
+        .px-#{$i} { padding-left: calc(var(--spacer) * #{$i}) !important; padding-right: calc(var(--spacer) * #{$i}) !important; }
+      }
+      
+
+      @for $i from 0 through 5 {
+        @for $j from 1 through 9 {
+            $val: string.unquote("#{$i}.#{$j}");
+            
+      
+          .p-#{$i}_#{$j} { padding: calc(var(--spacer) * #{$val}) !important; }
+          .pt-#{$i}_#{$j} { padding-top: calc(var(--spacer) * #{$val}) !important; }
+          .pb-#{$i}_#{$j} { padding-bottom: calc(var(--spacer) * #{$val}) !important; }
+          .ps-#{$i}_#{$j} { padding-left: calc(var(--spacer) * #{$val}) !important; }
+          .pe-#{$i}_#{$j} { padding-right: calc(var(--spacer) * #{$val}) !important; }
+      
+          .m-#{$i}_#{$j} { margin: calc(var(--spacer) * #{$val}) !important; }
+          .mt-#{$i}_#{$j} { margin-top: calc(var(--spacer) * #{$val}) !important; }
+          .mb-#{$i}_#{$j} { margin-bottom: calc(var(--spacer) * #{$val}) !important; }
+          .ms-#{$i}_#{$j} { margin-left: calc(var(--spacer) * #{$val}) !important; }
+          .me-#{$i}_#{$j} { margin-right: calc(var(--spacer) * #{$val}) !important; }
+        }
+      }         
+    }
+}
+
+// Alleen .fs-X_Y genereren voor X=0..10, Y=0..9 (dus 0.1 t/m 9.9)
+@for $i from 0 through 10 {
+  @for $j from 0 through 9 {
+    $val: $i + math.div($j, 10);
+    $name: "#{$i}_#{$j}";
+
+    // Sla de hele getallen 1 t/m 5 over
+    @if not ($val == 1 or $val == 2 or $val == 3 or $val == 4 or $val == 5) {
+      .fs-#{$name} {
+        font-size: #{$val}rem;
+      }
+    }
+  }
+}
+
+// Voeg 10 als apart geheel getal toe
+.fs-10 {
+  font-size: 10rem;
+}
+
+
+@for $i from 1 through 100 {
+  .z-#{$i} {
+    z-index: #{$i} !important;
+  }
+}
