@@ -1,4 +1,6 @@
 ---
+title: Everything you need to know about XWMS Documentation
+description: Comprehensive and user-friendly documentation to help you manage your account, configure integrations, and get started quickly with XWMS.
 seo:
   title: Everything you need to know about XWMS Documentation
   description: Comprehensive and user-friendly documentation to help you manage your account, configure integrations, and get started quickly with XWMS.
