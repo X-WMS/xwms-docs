@@ -21,5 +21,5 @@ export default defineAppConfig({
     colors: {
       primary: 'purple',
     }
-  }
+  },
 })

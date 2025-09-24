@@ -1,72 +1,125 @@
-# Docus Default Starter
+XWMS Documentation
 
-> A beautiful, minimal starter for creating documentation with Docus
+Welcome to the documentation for XWMS — a modern, secure, and scalable platform for managing users, partners, authentication, API clients, and more.
 
-This is the default Docus starter template that provides everything you need to build beautiful documentation sites with Markdown and Vue components.
+This repository contains structured documentation for both:
 
-> [!TIP]
-> If you're looking for i18n support, check out the [i18n starter](https://github.com/nuxt-themes/docus/tree/main/.starters/i18n).
+End-users (logging in, registering, managing accounts)
 
-## ✨ Features
+Partners (developers or businesses integrating with XWMS via OAuth & API)
 
-- 🎨 **Beautiful Design** - Clean, modern documentation theme
-- 📱 **Responsive** - Mobile-first responsive design  
-- 🌙 **Dark Mode** - Built-in dark/light mode support
-- 🔍 **Search** - Full-text search functionality
-- 📝 **Markdown Enhanced** - Extended markdown with custom components
-- 🎨 **Customizable** - Easy theming and brand customization
-- ⚡ **Fast** - Optimized for performance with Nuxt 4
-- 🔧 **TypeScript** - Full TypeScript support
+Bonus: Server Setup Docs for deployment and infrastructure
 
-## 🚀 Quick Start
+📘 Main Documentation Sections
+1. Getting Started with XWMS
 
-```bash
-# Install dependencies
-npm install
+Description: A simplified guide to get started with logging in, registering, and managing your account in XWMS.
 
-# Start development server
-npm run dev
-```
+Page: /getting-started
 
-Your documentation site will be running at `http://localhost:3000`
+Includes:
 
-## 📁 Project Structure
+How to log in securely using email/password, OAuth (Google/Microsoft), and 2FA
 
-```
-my-docs/
-├── content/              # Your markdown content
-│   ├── index.md         # Homepage
-│   ├── 1.getting-started/  # Getting started section
-│   └── 2.essentials/    # Essential documentation
-├── public/              # Static assets
-└── package.json         # Dependencies and scripts
-```
+Secure registration with email verification and spam protection
 
-## ⚡ Built with
+Managing account settings, devices, addresses, preferences, and sessions
 
-This starter comes pre-configured with:
+➡️ Go to Guide
 
-- [Nuxt 4](https://nuxt.com) - The web framework
-- [Nuxt Content](https://content.nuxt.com/) - File-based CMS
-- [Nuxt UI](https://ui.nuxt.com) - UI components
-- [Nuxt Image](https://image.nuxt.com/) - Optimized images
-- [Tailwind CSS 4](https://tailwindcss.com/) - Utility-first CSS
-- [Docus Layer](https://www.npmjs.com/package/docus) - Documentation theme
+2. Getting Started with XWMS Authentication & Partner Setup
 
-## 📖 Documentation
+Description: Overview of user authentication flows and partner OAuth setup.
 
-For detailed documentation on customizing your Docus project, visit the [Docus Documentation](https://docus.dev)
+Page: /getting-started-auth
 
-## 🚀 Deployment
+Includes:
 
-Build for production:
+Overview of authentication (OAuth, 2FA, suspicious login detection, recovery)
 
-```bash
-npm run build
-```
+How partners (clients) can create OAuth apps and API clients
 
-The built files will be in the `.output` directory, ready for deployment to any hosting provider that supports Node.js.
+Secure configuration of scopes, secrets, allowed domains, and more
 
-## 📄 License
+➡️ Go to Guide
 
-[MIT License](https://opensource.org/licenses/MIT) 
+🔐 End-User Documentation
+
+Login Guide
+: Secure login with 2FA, OAuth, and recovery flows
+
+Register Guide
+: Register securely with email confirmation and real name detection
+
+Account Settings
+: Manage your account, devices, addresses, notifications, etc.
+
+🤝 Partner & Developer Docs
+
+Partner Dashboard
+: Create OAuth clients and manage integration settings
+
+OAuth Integration Guide
+: Learn how to integrate XWMS OAuth into your application (includes Laravel, JS, PHP, etc.)
+
+⚙️ Server & Deployment Docs (Bonus)
+
+While the primary focus is authentication and OAuth integration, we've included advanced Linux server setup documentation for developers and devops working on deployment.
+
+Server Setup
+: Reinstalling, hardening and configuring a Linux server (UFW, SSH, fail2ban, PHP, MySQL, firewall, etc.)
+
+Using GitHub on Server
+: Clone GitHub projects into /var/www, configure SSH access
+
+MySQL Access via SSH Tunnel
+: Connect securely to remote MySQL databases locally using SSH
+
+File Permissions & Groups
+: Set correct file permissions, create groups, assign users and ensure Laravel/Apache works smoothly
+
+Domain Management
+: Setup Apache virtual hosts, enable HTTPS using Certbot, and manage site configs
+
+🧠 Summary for New Users & Developers
+Area	Topics Covered
+End-Users	Login, register, manage sessions, change settings, recovery
+Partners	Create OAuth clients, scopes, domains, API secrets
+Developers	Use Laravel or JS to authenticate with XWMS
+Server Admins	Ubuntu setup, Apache, MySQL, GitHub, SSH, Certbot, Permissions
+🧭 Navigation Icons
+
+Every page in the documentation is marked with a helpful icon:
+
+i-lucide-rocket → General getting started
+
+i-lucide-shield-check → Authentication and security
+
+i-lucide-server-cog → Server setup
+
+i-lucide-github → GitHub and deployment
+
+i-lucide-key → SSH / MySQL access
+
+i-lucide-file → File permissions
+
+i-lucide-cable → Domain and Apache management
+
+📞 Support
+
+If you need help:
+
+Check the documentation at the paths above
+
+For account/login issues, start at Login
+ or Register
+
+For OAuth/API issues, go to the Partner Dashboard
+
+Still stuck? Visit the Support Page
+
+📌 About XWMS
+
+XWMS (Extended Web Management System) is designed to simplify secure authentication, user management, and partner integration for modern web applications.
+
+This documentation helps streamline both the user experience and the developer integration process, making it easy to work with OAuth, APIs, and server infrastructure.

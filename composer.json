@@ -1,0 +1,57 @@
+{
+  "name": "xwms/package",
+  "description": "XWMS.nl provides secure, sophisticated, and custom-built login and authentication APIs for businesses. Our solutions ensure robust security, seamless integration with existing systems, and compliance with the highest industry standards. These are not simple APIs, but comprehensive identity management systems designed to deliver reliability and protection at enterprise scale.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "XWMS Team",
+      "email": "info@xwms.nl",
+      "homepage": "https://xwms.nl"
+    }
+  ],
+  "keywords": ["authentication", "login", "security", "api", "identity"],
+  "homepage": "https://xwms.nl",
+  "support": {
+    "email": "support@xwms.nl",
+    "issues": "https://github.com/X-WMS/xwms-package/issues",
+    "source": "https://github.com/X-WMS/xwms-package",
+    "docs": "https://docs.xwms.nl"
+  },
+  "autoload": {
+    "psr-4": {
+      "XWMS\\Package\\": "src/"
+    },
+    "files": [
+      "src/Helpers/functions.php"
+    ]
+  },
+  "require": {
+    "php": "^8.2",
+    "laravel/framework": ">=11.0"
+  },
+  "extra": {
+      "laravel": {
+          "providers": [
+              "XWMS\\Package\\Providers\\XwmsServiceProvider"
+          ]
+      }
+  },
+  "suggest": {
+    "filament/filament": "^3.3",
+    "laravel/fortify": "Authenticatie package",
+    "laravel/sanctum": "Token-gebaseerde authenticatie",
+    "laravel/socialite": "Social login integratie",
+    "laravel/tinker": "Tinker CLI voor debugging",
+    "livewire/livewire": "Livewire frontend support",
+    "phpmailer/phpmailer": "Email via SMTP",
+    "google/cloud-translate": "Google Translate API",
+    "league/oauth2-google": "OAuth2 Google login",
+    "pragmarx/google2fa": "Twee-factor authenticatie",
+    "socialiteproviders/google": "Google login provider",
+    "socialiteproviders/manager": "Socialite extensie",
+    "socialiteproviders/microsoft": "Microsoft login provider"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}

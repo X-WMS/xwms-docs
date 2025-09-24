@@ -6,7 +6,7 @@ seo:
 
 ::u-page-hero
 #title
-Welcome to the [XWMS]{.text-primary} Documentation
+Welcome to the [XWMS](https://xwms.nl){.text-primary} Documentation
 
 #description
 Your go-to resource for everything related to using XWMS. Whether you are a user managing your account, a partner configuring OAuth, or a developer setting up integrations, this documentation has you covered.
@@ -30,7 +30,7 @@ Your go-to resource for everything related to using XWMS. Whether you are a user
   to: https://github.com/X-WMS/xwms-docs
   variant: outline
   ---
-  For Devs on GitHub
+  For Devs On GitHub
   :::
 ::
 
@@ -42,7 +42,7 @@ Explore the key areas of our documentation
   :::u-page-feature
   ---
   icon: i-lucide-circle-user
-  to: https://nuxt.com
+  to: /getting-started/user
   ---
   #title
   User [Account]{.text-primary} Management
@@ -55,7 +55,7 @@ Explore the key areas of our documentation
   ---
   icon: i-lucide-handshake
   target: _blank
-  to: https://ui.nuxt.com/
+  to: /client/dashboard
   ---
   #title
   [Partner]{.text-primary} Integration Setup
@@ -68,7 +68,7 @@ Explore the key areas of our documentation
   ---
   icon: i-lucide-code
   target: _blank
-  to: https://github.com/X-WMS/xwms-docs
+  to: /client/developers
   ---
   #title
   [Developer]{.text-primary} & Setup Guides
