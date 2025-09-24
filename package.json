@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "nuxt dev --extends docus",
     "build": "nuxt build --extends docus",
-    "generate": "nuxt generate"
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",
