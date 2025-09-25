@@ -1,6 +1,10 @@
 # 🚀 XWMS Documentation
 
-![License](https://img.shields.io/github/license/USER/REPO)
+[![Build](https://img.shields.io/github/actions/workflow/status/X-WMS/xwms-doc/docs.yml?branch=main)](https://github.com/X-WMS/xwms-doc/actions)
+[![License](https://img.shields.io/github/license/X-WMS/xwms-doc)](https://github.com/X-WMS/xwms-doc/blob/main/LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/X-WMS/xwms-doc)](https://github.com/X-WMS/xwms-doc/commits/main)
+[![Repo Size](https://img.shields.io/github/repo-size/X-WMS/xwms-doc)](https://github.com/X-WMS/xwms-doc)
+[![Issues](https://img.shields.io/github/issues/X-WMS/xwms-doc)](https://github.com/X-WMS/xwms-doc/issues)
 
 Welcome to the official documentation for **XWMS** — a **modern, secure, and scalable platform** for managing users, partners, authentication, API clients, and more.
 
