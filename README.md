@@ -1,125 +1,127 @@
-XWMS Documentation
+# 🚀 XWMS Documentation
 
-Welcome to the documentation for XWMS — a modern, secure, and scalable platform for managing users, partners, authentication, API clients, and more.
+![License](https://img.shields.io/github/license/USER/REPO)
 
-This repository contains structured documentation for both:
+Welcome to the official documentation for **XWMS** — a **modern, secure, and scalable platform** for managing users, partners, authentication, API clients, and more.
 
-End-users (logging in, registering, managing accounts)
+This repository contains clear, structured documentation for:
 
-Partners (developers or businesses integrating with XWMS via OAuth & API)
+- 👤 **End-users** — Logging in, registering, managing accounts
+- 🤝 **Partners** — Developers/businesses integrating via OAuth & API
+- 🛠️ **Bonus** — Advanced server setup & deployment docs
 
-Bonus: Server Setup Docs for deployment and infrastructure
+---
 
-📘 Main Documentation Sections
-1. Getting Started with XWMS
+## 📘 Main Documentation Sections
 
-Description: A simplified guide to get started with logging in, registering, and managing your account in XWMS.
+### 1️⃣ Getting Started with XWMS  
+> A simplified guide to help end-users log in, register, and manage their account securely.
 
-Page: /getting-started
+🔗 **Page:** `https://docs.xwms.nl/getting-started`  
+✅ Includes:
+- Email/password login, OAuth (Google, Microsoft), 2FA setup  
+- Secure registration with email verification & anti-spam  
+- Managing account settings, sessions, devices, preferences  
 
-Includes:
+👉 [**Go to Guide »**](https://docs.xwms.nl/getting-started)
 
-How to log in securely using email/password, OAuth (Google/Microsoft), and 2FA
+---
 
-Secure registration with email verification and spam protection
+### 2️⃣ Getting Started with Authentication & Partner Setup  
+> Everything partners need to integrate with XWMS using OAuth and APIs.
 
-Managing account settings, devices, addresses, preferences, and sessions
+🔗 **Page:** `https://docs.xwms.nl/getting-started-auth`  
+✅ Includes:
+- Auth flow overview (OAuth, 2FA, suspicious login detection)  
+- Creating OAuth apps & API clients  
+- Managing scopes, secrets, domains, and more  
 
-➡️ Go to Guide
+👉 [**Go to Guide »**](https://docs.xwms.nl/getting-started-auth)
 
-2. Getting Started with XWMS Authentication & Partner Setup
+---
 
-Description: Overview of user authentication flows and partner OAuth setup.
+## 🔐 End-User Documentation
 
-Page: /getting-started-auth
+| 📄 Guide | 📝 Description |
+|---------|----------------|
+| **Login Guide** | Secure login using 2FA, OAuth, and account recovery |
+| **Register Guide** | Secure registration with email confirmation and name validation |
+| **Account Settings** | Manage devices, addresses, sessions, notifications, etc. |
 
-Includes:
+---
 
-Overview of authentication (OAuth, 2FA, suspicious login detection, recovery)
+## 🤝 Partner & Developer Docs
 
-How partners (clients) can create OAuth apps and API clients
+| ⚙️ Feature | 📝 Description |
+|-----------|----------------|
+| **Partner Dashboard** | Create/manage OAuth clients and integration settings |
+| **OAuth Integration Guide** | How to integrate XWMS OAuth with Laravel, JS, PHP, etc. |
 
-Secure configuration of scopes, secrets, allowed domains, and more
+---
 
-➡️ Go to Guide
+## ⚙️ Server & Deployment Docs (Bonus)
 
-🔐 End-User Documentation
+> For developers and DevOps engineers deploying XWMS or building custom infrastructure.
 
-Login Guide
-: Secure login with 2FA, OAuth, and recovery flows
+| 📁 Topic | 🔍 Details |
+|----------|-----------|
+| **Server Setup** | Harden & configure Linux servers (UFW, SSH, fail2ban, PHP, MySQL) |
+| **Using GitHub on Server** | Clone repos, configure SSH for `/var/www` deployment |
+| **MySQL via SSH Tunnel** | Secure access to remote MySQL databases |
+| **File Permissions** | Proper Laravel/Apache setup with users, groups, permissions |
+| **Domain Management** | Apache virtual hosts, HTTPS with Certbot, site configuration |
 
-Register Guide
-: Register securely with email confirmation and real name detection
+---
 
-Account Settings
-: Manage your account, devices, addresses, notifications, etc.
+## 🧠 Quick Summary
 
-🤝 Partner & Developer Docs
+| 🧩 Area | 🧭 Topics Covered |
+|--------|------------------|
+| **End-Users** | Login, register, sessions, settings, recovery |
+| **Partners** | OAuth clients, scopes, secrets, domains |
+| **Developers** | Laravel/JS integration with XWMS |
+| **Server Admins** | Ubuntu setup, Apache, MySQL, SSH, GitHub, Certbot, permissions |
 
-Partner Dashboard
-: Create OAuth clients and manage integration settings
+---
 
-OAuth Integration Guide
-: Learn how to integrate XWMS OAuth into your application (includes Laravel, JS, PHP, etc.)
+## 🧭 Navigation Icons
 
-⚙️ Server & Deployment Docs (Bonus)
+> Each section of the docs is labeled with intuitive icons:
 
-While the primary focus is authentication and OAuth integration, we've included advanced Linux server setup documentation for developers and devops working on deployment.
+| 🖼️ Icon | 🔎 Meaning |
+|--------|-------------|
+| `i-lucide-rocket` | Getting Started |
+| `i-lucide-shield-check` | Authentication & Security |
+| `i-lucide-server-cog` | Server Setup |
+| `i-lucide-github` | GitHub & Deployment |
+| `i-lucide-key` | SSH & MySQL Access |
+| `i-lucide-file` | File Permissions |
+| `i-lucide-cable` | Domain & Apache Management |
 
-Server Setup
-: Reinstalling, hardening and configuring a Linux server (UFW, SSH, fail2ban, PHP, MySQL, firewall, etc.)
+---
 
-Using GitHub on Server
-: Clone GitHub projects into /var/www, configure SSH access
+## 📞 Support
 
-MySQL Access via SSH Tunnel
-: Connect securely to remote MySQL databases locally using SSH
+Need help?
 
-File Permissions & Groups
-: Set correct file permissions, create groups, assign users and ensure Laravel/Apache works smoothly
+- 📚 Browse the documentation via the links above
+- 🔐 For login/account issues: start at [Login](https://docs.xwms.nl/getting-started)
+- 🤝 For API/OAuth help: see the [Partner Dashboard](https://docs.xwms.nl/getting-started-auth)
+- 🆘 Still stuck? Visit the [Support Page](https://xwms.nl/contact)
 
-Domain Management
-: Setup Apache virtual hosts, enable HTTPS using Certbot, and manage site configs
+---
 
-🧠 Summary for New Users & Developers
-Area	Topics Covered
-End-Users	Login, register, manage sessions, change settings, recovery
-Partners	Create OAuth clients, scopes, domains, API secrets
-Developers	Use Laravel or JS to authenticate with XWMS
-Server Admins	Ubuntu setup, Apache, MySQL, GitHub, SSH, Certbot, Permissions
-🧭 Navigation Icons
+## 📌 About XWMS
 
-Every page in the documentation is marked with a helpful icon:
+**XWMS** (Extended Web Management System) is built to simplify:
 
-i-lucide-rocket → General getting started
+- Secure user authentication  
+- Partner integrations via OAuth  
+- API client management  
+- Scalable and secure server deployment  
 
-i-lucide-shield-check → Authentication and security
+This documentation is here to help you succeed — whether you’re a user, a partner, or a developer building with XWMS.
 
-i-lucide-server-cog → Server setup
+---
 
-i-lucide-github → GitHub and deployment
-
-i-lucide-key → SSH / MySQL access
-
-i-lucide-file → File permissions
-
-i-lucide-cable → Domain and Apache management
-
-📞 Support
-
-If you need help:
-
-Check the documentation at the paths above
-
-For account/login issues, start at Login
- or Register
-
-For OAuth/API issues, go to the Partner Dashboard
-
-Still stuck? Visit the Support Page
-
-📌 About XWMS
-
-XWMS (Extended Web Management System) is designed to simplify secure authentication, user management, and partner integration for modern web applications.
-
-This documentation helps streamline both the user experience and the developer integration process, making it easy to work with OAuth, APIs, and server infrastructure.
+[Back to top](#top)

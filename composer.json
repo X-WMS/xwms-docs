@@ -10,12 +10,12 @@
       "homepage": "https://xwms.nl"
     }
   ],
-  "keywords": ["authentication", "login", "security", "api", "identity"],
+  "keywords": ["api", "php", "security", "oauth", "jwt", "laravel", "oauth2", "symfony", "ai", "vue", "authentication", "login", "mfa", "secure-login", "login-api", "tailwindcss", "xwms"],
   "homepage": "https://xwms.nl",
   "support": {
-    "email": "support@xwms.nl",
-    "issues": "https://github.com/X-WMS/xwms-package/issues",
-    "source": "https://github.com/X-WMS/xwms-package",
+    "email": "info@xwms.nl",
+    "issues": "https://github.com/X-WMS/xwms-docs/issues",
+    "source": "https://github.com/X-WMS/xwms-docs",
     "docs": "https://docs.xwms.nl"
   },
   "autoload": {
