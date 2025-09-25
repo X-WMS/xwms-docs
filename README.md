@@ -22,26 +22,26 @@ This repository contains clear, structured documentation for:
 ### 1️⃣ Getting Started with XWMS  
 > A simplified guide to help end-users log in, register, and manage their account securely.
 
-🔗 **Page:** `https://docs.xwms.nl/getting-started`  
+🔗 **Page:** `https://docs.xwms.nl/getting-started/user`  
 ✅ Includes:
 - Email/password login, OAuth (Google, Microsoft), 2FA setup  
 - Secure registration with email verification & anti-spam  
 - Managing account settings, sessions, devices, preferences  
 
-👉 [**Go to Guide »**](https://docs.xwms.nl/getting-started)
+👉 [**Go to Guide »**](https://docs.xwms.nl/getting-started/user)
 
 ---
 
 ### 2️⃣ Getting Started with Authentication & Partner Setup  
 > Everything partners need to integrate with XWMS using OAuth and APIs.
 
-🔗 **Page:** `https://docs.xwms.nl/getting-started-auth`  
+🔗 **Page:** `https://docs.xwms.nl/getting-started/client`  
 ✅ Includes:
 - Auth flow overview (OAuth, 2FA, suspicious login detection)  
 - Creating OAuth apps & API clients  
 - Managing scopes, secrets, domains, and more  
 
-👉 [**Go to Guide »**](https://docs.xwms.nl/getting-started-auth)
+👉 [**Go to Guide »**](https://docs.xwms.nl/getting-started/client)
 
 ---
 
@@ -110,8 +110,8 @@ This repository contains clear, structured documentation for:
 Need help?
 
 - 📚 Browse the documentation via the links above
-- 🔐 For login/account issues: start at [Login](https://docs.xwms.nl/getting-started)
-- 🤝 For API/OAuth help: see the [Partner Dashboard](https://docs.xwms.nl/getting-started-auth)
+- 🔐 For login/account issues: start at [Login](https://docs.xwms.nl/user/login)
+- 🤝 For API/OAuth help: see the [Partner Dashboard](https://docs.xwms.nl/client/developers)
 - 🆘 Still stuck? Visit the [Support Page](https://xwms.nl/contact)
 
 ---
