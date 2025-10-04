@@ -27,8 +27,7 @@
     ]
   },
   "require": {
-    "php": "^8.2",
-    "laravel/framework": ">=11.0"
+    "php": "^8.2"
   },
   "extra": {
       "laravel": {
@@ -38,6 +37,7 @@
       }
   },
   "suggest": {
+    "laravel/framework": ">=11.0",
     "filament/filament": "^3.3",
     "laravel/fortify": "Authenticatie package",
     "laravel/sanctum": "Token-gebaseerde authenticatie",
