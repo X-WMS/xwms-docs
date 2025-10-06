@@ -16,16 +16,20 @@ class XwmsApiHelperPHP
     private string|null $redirectUri = null;
 
     public function __construct(
-        string $clientId,
-        string $clientSecret,
+        ?string $clientId = null,
+        ?string $clientSecret = null,
         ?Client $httpClient = null,
         ?string $clientDomain = null,
-        string $baseUri = "https://xwms.nl/api/"
+        ?string $baseUri = null
     ) {
-        $this->clientId = $clientId;
-        $this->clientSecret = $clientSecret;
-        $this->clientDomain = $clientDomain ?? ($_SERVER['HTTP_HOST'] ?? getenv('XWMS_DOMAIN') ?? null);
-        $this->baseUri = rtrim($baseUri, '/') . '/';
+        $projectRoot = getcwd();
+        $configPath = $projectRoot . '../../config/xwms.php';
+        $xwmsConfig = require $configPath;
+
+        $this->clientId = $clientId ?? $xwmsConfig["client_id"];
+        $this->clientSecret = $clientSecret ?? $xwmsConfig["client_secret"];
+        $this->clientDomain = $clientDomain ?? $xwmsConfig["client_domain"];
+        $this->baseUri = rtrim($baseUri ?? $xwmsConfig["xwms_api_url"], '/') . '/';
 
         $this->httpClient = $httpClient ?: new Client([
             'base_uri' => $this->baseUri,
@@ -39,8 +43,12 @@ class XwmsApiHelperPHP
             throw new Exception("Missing required client configuration.");
         }
 
+        $projectRoot = getcwd();
+        $configPath = $projectRoot . '../../config/xwms.php';
+        $xwmsConfig = require $configPath;
+
         // Add default redirect_url if not set
-        $payload['redirect_url'] ??= getenv('XWMS_REDIRECT_URI') ?? 'http://localhost/xwms/validateToken';
+        $payload['redirect_url'] ??= $xwmsConfig["client_redirect"] ?? 'http://localhost/xwms/validateToken';
 
         try {
             $response = $this->httpClient->post($endpoint, [
@@ -149,8 +157,12 @@ class XwmsApiHelperPHP
 
     public function auth(): void
     {
+        $projectRoot = getcwd();
+        $configPath = $projectRoot . '../../config/xwms.php';
+        $xwmsConfig = require $configPath;
+
         $this->authenticateUser([
-            'redirect_url' => getenv('XWMS_REDIRECT_URI')
+            'redirect_url' => $xwmsConfig["client_redirect"]
         ]);
 
         $uri = $this->redirect();
