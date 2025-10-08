@@ -12,7 +12,7 @@ class RateLimit
         $sessionId = session()->getId();
         $throttleKey = $key . ':' . sha1($ip . '|' . $sessionId);
     
-        $maxFreeAttempts = $options['startAfter'] ?? 0;
+        $maxFreeAttempts = $options['startAfter'] ?? 2;
         $attempts = RateLimiter::attempts($throttleKey);
     
         if ($attempts >= $maxFreeAttempts) {
