@@ -6,5 +6,9 @@ export default defineNuxtConfig({
 
   devtools: {
     enabled: false,
-  }
+  },
 })
+
+export const layers = [
+  './layer/app'
+]
