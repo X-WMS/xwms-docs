@@ -1,18 +1,9 @@
 ---
-title: Titel van Subfolderpagina2
-navigation: true
+title: Laravel Installation
 layout: docs
 ---
 
-asc
-asc
-as
-ca
-sc
-as
-c
-
-<!-- ## Installation (Laravel)
+## Installation (Laravel)
 
 Step 1: Install the package via Composer
 
@@ -52,7 +43,7 @@ Route::get('/xwms/info', [XwmsApiHelper::class, 'info'])->name('xwms.api.info');
 Route::get('/xwms/auth', [XwmsApiHelper::class, 'auth'])->name('xwms.api.auth');
 Route::get('/xwms/validateToken', [XwmsApiHelper::class, 'authValidate'])->name('xwms.api.validateToken');
 ```
-✅ That’s it! You’re now ready to use the XWMS authentication APIs in your Laravel app. -->
+✅ That’s it! You’re now ready to use the XWMS authentication APIs in your Laravel app.
 
 
 
