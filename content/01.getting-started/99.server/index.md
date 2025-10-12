@@ -1,10 +1,11 @@
 ---
-title: Server Setup & Deployment Guide
+title: Server Setup
 description: Complete guide to reinstall, secure, configure your Strato Ubuntu server and deploy GitHub projects.
 navigation:
   icon: i-lucide-server-cog
+  collapsed: false
 seo:
-  title: Server Setup & Deployment Guide
+  title: Server Setup
   description: Learn how to reinstall your server, configure firewall and SSH, deploy GitHub projects, and manage domains.
 ---
 
