@@ -7,6 +7,52 @@ use Illuminate\Support\Facades\DB;
 
 class Filters
 {
+    /**
+     * Resolve filters from multiple Filament versions / contexts.
+     * Order of precedence:
+     * - Explicit `$passed` when not null
+     * - v3 widget/page `$filters` property
+     * - v2 widget/page `$filterFormData` property
+     * - HTTP request `filters` payload (query or body)
+     */
+    public static function getFilters(?object $context = null, ?array $passed = null): array
+    {
+        if ($passed !== null) {
+            // If explicitly provided (even empty), trust caller.
+            return $passed;
+        }
+
+        if ($context !== null) {
+            // Filament v3: InteractsWithPageFilters exposes `$filters` (#[Reactive])
+            if (property_exists($context, 'filters')) {
+                $value = $context->filters;
+                if (is_array($value)) {
+                    return $value;
+                }
+            }
+
+            // Filament v2: common pattern `$filterFormData`
+            if (property_exists($context, 'filterFormData')) {
+                $value = $context->filterFormData;
+                if (is_array($value)) {
+                    return $value;
+                }
+            }
+        }
+
+        // Fallback: try request() if available
+        try {
+            $req = request();
+            $value = $req->input('filters');
+            if (is_array($value)) {
+                return $value;
+            }
+        } catch (\Throwable $e) {
+            // ignore when request() is not available (CLI, etc.)
+        }
+
+        return [];
+    }
     public static function resolveDateFilter(array $filters): array
     {
         $defaultStart = now()->subMonth()->startOfDay();
@@ -111,7 +157,8 @@ class Filters
         ?callable $modifyQueryCallback = null,
         ?int $limit = 20
     ): array {
-        ['start' => $start, 'end' => $end, 'dateFormat' => $dateFormat] = self::resolveDateFilter($class->filterFormData ?? []);
+        $filters = self::getFilters($class);
+        ['start' => $start, 'end' => $end, 'dateFormat' => $dateFormat] = self::resolveDateFilter($filters);
 
         // Pas query aan als callback gegeven is (bv. extra select of where)
         if ($modifyQueryCallback) {
@@ -225,7 +272,21 @@ class Filters
         ?string $countExpression = 'COUNT(DISTINCT session_id)',
         int $limit = 5
     ): array {
-        ['start' => $start, 'end' => $end] = self::resolveDateFilter($filterFormData);
+        // Support callers passing null/[] by falling back to request filters
+        $filters = $filterFormData;
+        if (!is_array($filters) || $filters === []) {
+            try {
+                $req = request();
+                $value = $req->input('filters');
+                if (is_array($value)) {
+                    $filters = $value;
+                }
+            } catch (\Throwable $e) {
+                $filters = [];
+            }
+        }
+
+        ['start' => $start, 'end' => $end] = self::resolveDateFilter($filters);
 
         $results = DB::table($table)
             ->select($labelColumn, DB::raw("$countExpression as count"))
