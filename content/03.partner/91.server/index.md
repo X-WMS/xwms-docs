@@ -13,8 +13,8 @@ seo:
 
 Use the Strato control panel to reinstall Ubuntu 22.04, set a strong root password, and add your SSH public key.
 
-- [Reinstalling the Server](/server/setup)
-- [Creating an SSH Key with PuTTYgen](/server/setup)
+- [Reinstalling the Server](/partner/server/setup)
+- [Creating an SSH Key with PuTTYgen](/partner/server/setup)
 
 ---
 
@@ -22,7 +22,7 @@ Use the Strato control panel to reinstall Ubuntu 22.04, set a strong root passwo
 
 Configure UFW firewall to allow HTTP, HTTPS, and SSH ports. Disable root SSH login, add a non-root user, install fail2ban and unattended-upgrades for security.
 
-- [Firewall Configuration & Security](/server/setup)
+- [Firewall Configuration & Security](/partner/server/setup)
 
 ---
 
@@ -30,7 +30,7 @@ Configure UFW firewall to allow HTTP, HTTPS, and SSH ports. Disable root SSH log
 
 Install Apache, PHP 8.3, MySQL, PhpMyAdmin and configure them for your web projects.
 
-- [MySQL & Web Server Setup](/server/mysql)
+- [MySQL & Web Server Setup](/partner/server/mysql)
 
 ---
 
@@ -38,8 +38,8 @@ Install Apache, PHP 8.3, MySQL, PhpMyAdmin and configure them for your web proje
 
 Generate SSH keys for GitHub, add keys to your GitHub account, clone repositories to `/var/www`, and set proper file permissions and groups.
 
-- [GitHub Project Deployment](/server/github)
-- [Managing File Permissions & Groups](/server/filepermissions)
+- [GitHub Project Deployment](/partner/server/github)
+- [Managing File Permissions & Groups](/partner/server/filepermissions)
 
 ---
 
@@ -47,7 +47,7 @@ Generate SSH keys for GitHub, add keys to your GitHub account, clone repositorie
 
 Install Composer and Node.js, run Laravel commands, and configure Apache virtual hosts.
 
-- [Composer & Frontend Tools](/server/github)
+- [Composer & Frontend Tools](/partner/server/github)
 
 ---
 
@@ -55,7 +55,7 @@ Install Composer and Node.js, run Laravel commands, and configure Apache virtual
 
 Use Certbot to obtain and install SSL certificates, enabling HTTPS on your domains.
 
-- [Domain Management & HTTPS Setup](/server/domainmanagment)
+- [Domain Management & HTTPS Setup](/partner/server/domainmanagment)
 
 ---
 
@@ -63,7 +63,7 @@ Use Certbot to obtain and install SSL certificates, enabling HTTPS on your domai
 
 Create SSH tunnels for local database access without exposing MySQL publicly.
 
-- [MySQL Remote Access](/server/mysql)
+- [MySQL Remote Access](/partner/server/mysql)
 
 ---
 
@@ -71,7 +71,7 @@ Create SSH tunnels for local database access without exposing MySQL publicly.
 
 Add new websites, configure Apache virtual hosts, manage permissions, and secure your domains with HTTPS.
 
-- [Domain Management](/server/domainmanagment)
+- [Domain Management](/partner/server/domainmanagment)
 
 ---
 

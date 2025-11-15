@@ -56,8 +56,7 @@ Explore the key areas of our documentation
   :::u-page-feature
   ---
   icon: i-lucide-handshake
-  target: _blank
-  to: /client/dashboard
+  to: /getting-started/client
   ---
   #title
   [Partner]{.text-primary} Integration Setup
@@ -69,8 +68,7 @@ Explore the key areas of our documentation
   :::u-page-feature
   ---
   icon: i-lucide-code
-  target: _blank
-  to: /client/developers
+  to: /partner/oauth-setup
   ---
   #title
   [Developer]{.text-primary} & Setup Guides
