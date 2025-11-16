@@ -1,5 +1,4 @@
 ---
-
 title: Python Installation
 description: ""
 layout: docs
@@ -7,42 +6,40 @@ layout: docs
 
 # 🐍 XWMS Login for Python Apps
 
-This guide helps you connect your **Python app** (like Flask or FastAPI) with **XWMS Login** — a secure way to log users in using tokens.
+This guide helps you connect your **Python app** (for example Flask or FastAPI)
+to **XWMS Login** – a secure way to sign users in using tokens.
 
-You’ll learn how to:
+We start with a quick version for developers, then explain it in very simple
+language so even someone who does not code can follow.
 
-* Add XWMS login to your app
-* Verify the login token safely
-* Work with environment variables using `.env`
-* Handle the callback after login
+Important: we will link users using the **stable XWMS id `sub`**,
+not their email address.
 
 ---
 
-## ⚡ Quick Setup (Short Version)
+## 🚀 Quick Setup (Short Version)
 
-If you already know Python web basics, follow these quick steps 👇
+If you already know Python web basics, follow these steps.
 
-### Step 1: Install dependencies
+### 1. Install dependencies
 
 ```bash
 pip install requests python-dotenv flask
 ```
 
-### Step 2: Add `.env` file
+### 2. Add `.env` file
 
-In your project folder, create a `.env` file:
+Create a `.env` file:
 
 ```env
 XWMS_CLIENT_ID=your_client_id_here
-XWMS_DOMAIN=your_domain_here # like example.com
+XWMS_DOMAIN=your_domain_here      # like example.com
 XWMS_CLIENT_SECRET=your_secret_here
 XWMS_REDIRECT_URI=http://localhost:5000/xwms/validateToken
 XWMS_API_URL=https://api.xwms.com/
 ```
 
-### Step 3: Create a simple login flow
-
-Here’s an example using **Flask**:
+### 3. Simple Flask login flow
 
 ```python
 from flask import Flask, redirect, request, jsonify
@@ -52,173 +49,155 @@ from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
 
-XWMS_API_URL = os.getenv("XWMS_API_URL")
-DOMAIN = os.getenv("XWMS_DOMAIN")
-CLIENT_DOMAIN = os.getenv("XWMS_CLIENT_DOMAIN")
-CLIENT_SECRET = os.getenv("XWMS_CLIENT_SECRET")
-REDIRECT_URI = os.getenv("XWMS_REDIRECT_URI")
+API_URL = os.getenv("XWMS_API_URL")
 
 @app.route("/xwms/auth")
 def xwms_auth():
-    try:
-        # Step 1: Ask XWMS for a login URL
-        response = requests.post(
-            f"{XWMS_API_URL}sign-token",
-            json={
-                "client_id": CLIENT_ID,
-                "domain": DOMAIN,
-                "client_secret": CLIENT_SECRET,
-                "redirect_url": REDIRECT_URI,
-            },
-            timeout=10
-        )
-        data = response.json()
-        login_url = data.get("data", {}).get("url")
+    # Ask XWMS for a login URL
+    resp = requests.post(
+        f"{API_URL}sign-token",
+        json={
+            "client_id": os.getenv("XWMS_CLIENT_ID"),
+            "domain": os.getenv("XWMS_DOMAIN"),
+            "client_secret": os.getenv("XWMS_CLIENT_SECRET"),
+            "redirect_url": os.getenv("XWMS_REDIRECT_URI"),
+        },
+        timeout=10,
+    )
+    data = resp.json()
+    login_url = data.get("data", {}).get("url")
+    return redirect(login_url)
 
-        if not login_url:
-            return jsonify({"error": "No login URL returned from XWMS."}), 500
-
-        return redirect(login_url)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @app.route("/xwms/validateToken")
 def xwms_callback():
-    try:
-        token = request.args.get("token")
-        if not token:
-            return jsonify({"error": "Missing token."}), 400
+    token = request.args.get("token")
+    if not token:
+        return jsonify({"error": "Missing token."}), 400
 
-        # Step 2: Verify the token with XWMS
-        response = requests.post(
-            f"{XWMS_API_URL}sign-token-verify",
-            json={
-                "token": token,
-                "client_id": CLIENT_ID,
-                "domain": DOMAIN,
-                "client_secret": CLIENT_SECRET
-            },
-            timeout=10
-        )
+    resp = requests.post(
+        f"{API_URL}sign-token-verify",
+        json={
+            "token": token,
+            "client_id": os.getenv("XWMS_CLIENT_ID"),
+            "domain": os.getenv("XWMS_DOMAIN"),
+            "client_secret": os.getenv("XWMS_CLIENT_SECRET"),
+        },
+        timeout=10,
+    )
+    data = resp.json()
+    if data.get("status") != "success":
+        return jsonify({"error": "Invalid or expired token."}), 400
 
-        data = response.json()
+    user = data.get("data", {})
 
-        if data.get("status") != "success":
-            return jsonify({"error": "Invalid or expired token."}), 400
+    # Professional account linking: use the stable "sub" id
+    # pseudo‑code:
+    # user_obj = find_or_create_user_by_sub(user["sub"], user)
 
-        user_data = data.get("data", {})
-        return jsonify({"message": "User verified successfully!", "user": user_data})
+    return jsonify({"message": "User verified", "user": user})
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
 ```
 
-### Step 4: Run your app 🎉
-
-```bash
-python app.py
-```
-
-Visit [http://localhost:5000/xwms/auth](http://localhost:5000/xwms/auth) — this will open the **XWMS login** page.
-
-When the user finishes logging in, XWMS redirects them back to your `/xwms/validateToken` route.
+Visit `http://localhost:5000/xwms/auth` to start login.
 
 ---
 
-## 🧠 Full Step-by-Step (Explained Like You’re 10)
+## 🧠 Full Explanation – Like You’re 10
 
-### 🪄 Step 1: What we’re building
+### 1. Guard, ticket and playground
 
-We want a simple Python website that lets people click **Login with XWMS**. XWMS will check who they are, and your app will get their verified info.
+Imagine your Python app is a **playground**.  
+XWMS is the **guard** at the gate.
 
-### ⚙️ Step 2: Install some tools
+When someone wants to play:
 
-We need three helpers:
+1. Your app sends them to the guard (XWMS).  
+2. The guard checks who they are and, if all is good, gives a **ticket** (token).  
+3. The person comes back to your app with that ticket.  
+4. Your app asks the guard, “Is this ticket real? Who is this?”  
 
-* `requests` → talk to the XWMS API
-* `flask` → make a simple web server
-* `python-dotenv` → load our secret keys from a `.env` file
+The answer includes a stable id called `sub`.
 
-Type this in your terminal:
+---
 
-```bash
-pip install requests flask python-dotenv
-```
+### 2. Why we don’t rely on email
 
-### 🧾 Step 3: Set your secrets
+Old examples often say:
 
-We keep our **secrets** in a hidden file called `.env`.
+> “Find the user by email, or create a new one using that email.”
 
-```env
-XWMS_CLIENT_ID=123456
-XWMS_DOMAIN=your_domain_here # like example.com
-XWMS_CLIENT_SECRET=mysecretkey
-XWMS_REDIRECT_URI=http://localhost:5000/xwms/validateToken
-XWMS_API_URL=https://api.xwms.com/
-```
+This is risky:
 
-These tell XWMS who your app is and where to send people after they log in.
+- people can change their email  
+- one email might belong to multiple people (shared mailbox)  
+- email alone is not a permanent id  
 
-### 🌐 Step 4: Make your `app.py`
+If email changes, your database might think it is a new person.
 
-Here’s a simple **Flask** app that lets people log in via XWMS:
+XWMS therefore gives you a **stable id** called `sub`:
+
+- it does not change when email or name changes  
+- it uniquely identifies the XWMS account  
+- you can imagine it like a **student number** at school  
+
+We store `sub` in our own database and use that to look people up.
+
+---
+
+### 3. Pseudo‑code for linking using `sub`
+
+Below is language‑agnostic pseudo‑code – you can implement it with
+SQLAlchemy, Django ORM, plain SQL, etc.
 
 ```python
-from flask import Flask, redirect, request, jsonify
-import requests, os
-from dotenv import load_dotenv
+def find_or_create_user_by_sub(sub: str, user_data: dict):
+    if not sub:
+        raise ValueError("Missing XWMS sub")
 
-load_dotenv()
-app = Flask(__name__)
+    # 1) Try to find an existing connection row
+    connection = XwmsConnection.query.filter_by(sub=sub).first()
+    if connection and connection.user:
+        # Optional: keep some fields in sync
+        user = connection.user
+        user.name = user_data.get("name") or user.name
+        user.email = user_data.get("email") or user.email
+        db.session.commit()
+        return user
 
-@app.route("/")
-def home():
-    return '<a href="/xwms/auth">🔑 Login with XWMS</a>'
-
-@app.route("/xwms/auth")
-def start_login():
-    response = requests.post(
-        os.getenv("XWMS_API_URL") + "sign-token",
-        json={
-            "client_id": os.getenv("XWMS_CLIENT_ID"),
-            "domain": os.getenv("XWMS_CLIENT_DOMAIN"),
-            "client_secret": os.getenv("XWMS_CLIENT_SECRET"),
-            "redirect_url": os.getenv("XWMS_REDIRECT_URI"),
-        }
+    # 2) No user yet → create one
+    name = (
+        user_data.get("name")
+        or f"{user_data.get('given_name', '')} {user_data.get('family_name', '')}".strip()
+        or "User"
     )
-    data = response.json()
-    return redirect(data["data"]["url"])
 
-@app.route("/xwms/validateToken")
-def verify_user():
-    token = request.args.get("token")
-    verify = requests.post(
-        os.getenv("XWMS_API_URL") + "sign-token-verify",
-        json={"token": token}
+    user = User(
+        name=name,
+        email=user_data.get("email"),
+        avatar=user_data.get("picture"),
+        password_hash=generate_random_password_hash(),
     )
-    return jsonify(verify.json())
+    db.session.add(user)
+    db.session.commit()
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    # 3) Store the new connection
+    connection = XwmsConnection(user_id=user.id, sub=sub)
+    db.session.add(connection)
+    db.session.commit()
+
+    return user
 ```
 
-### 💡 Step 5: Test it!
-
-* Run: `python app.py`
-* Go to: [http://localhost:5000](http://localhost:5000)
-* Click the **Login with XWMS** link
-* Log in via XWMS
-* You’ll see your verified info printed as JSON
+You would call this inside your `/xwms/validateToken` route,
+after verifying the token and reading `user = data["data"]`.
 
 ---
 
-## 🧩 Advanced Usage (FastAPI Example)
-
-If you prefer **FastAPI**, here’s a version that works the same way:
+### 4. Example with FastAPI (advanced)
 
 ```python
 from fastapi import FastAPI, Request
@@ -229,28 +208,41 @@ from dotenv import load_dotenv
 load_dotenv()
 app = FastAPI()
 
+API_URL = os.getenv("XWMS_API_URL")
+
+
 @app.get("/xwms/auth")
 def auth():
     res = requests.post(
-        os.getenv("XWMS_API_URL") + "sign-token",
+        API_URL + "sign-token",
         json={
             "client_id": os.getenv("XWMS_CLIENT_ID"),
-            "domain": os.getenv("XWMS_CLIENT_DOMAIN"),
+            "domain": os.getenv("XWMS_DOMAIN"),
             "client_secret": os.getenv("XWMS_CLIENT_SECRET"),
             "redirect_url": os.getenv("XWMS_REDIRECT_URI"),
-        }
+        },
     )
     login_url = res.json().get("data", {}).get("url")
     return RedirectResponse(login_url)
+
 
 @app.get("/xwms/validateToken")
 def callback(request: Request):
     token = request.query_params.get("token")
     res = requests.post(
-        os.getenv("XWMS_API_URL") + "sign-token-verify",
-        json={"token": token}
+        API_URL + "sign-token-verify",
+        json={"token": token},
     )
-    return JSONResponse(res.json())
+    data = res.json()
+
+    if data.get("status") != "success":
+        return JSONResponse({"error": "Invalid or expired token"}, status_code=400)
+
+    user_data = data.get("data", {})
+    # Again: use sub for linking
+    # user = find_or_create_user_by_sub(user_data["sub"], user_data)
+
+    return JSONResponse({"message": "User verified", "user": user_data})
 ```
 
 Run with:
@@ -261,11 +253,22 @@ uvicorn app:app --reload
 
 ---
 
-## ✅ Summary
+### 5. Debugging tips
 
-* 🧩 XWMS works with any Python web framework
-* 🔒 Always use `.env` to store secrets
-* 🚀 The login flow uses `sign-token` and `sign-token-verify`
-* 🧠 Works the same as in PHP or Laravel — just Python-style!
+- Check that `XWMS_REDIRECT_URI` in `.env` matches the callback route exactly.  
+- Print `data = response.json()` when something fails to see error messages.  
+- Make sure your `.env` is loaded (`load_dotenv()` is called before reading).  
 
-> This setup is simple, secure, and perfect for any Python app that wants to use **enterprise-grade login with XWMS**.
+---
+
+## Summary
+
+- Your Python app redirects users to XWMS to log in.  
+- XWMS sends them back with a token.  
+- You verify the token and get user data including a **stable `sub` id**.  
+- You use `sub` to find or create a local user in your database,
+  instead of relying on email.  
+
+This gives you a robust, professional login flow that keeps working
+even when users change their email address.
+

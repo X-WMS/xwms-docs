@@ -4,18 +4,20 @@ description: ""
 layout: docs
 ---
 
-# Laravel Installation — XWMS Authentication
+# Laravel Installation – XWMS Authentication
 
 This page shows how to install and use the **XWMS Client OAuth** system inside a Laravel project.
-We’ll start with a **quick setup**, then move to a **detailed, easy-to-understand walkthrough** — explained as if you’re 10 years old.
+We start with a **quick setup**, then a **slow, friendly explanation** (so that even a 10‑year‑old
+could follow the idea).
+
+The important change in this version:  
+we no longer link users by **email address**, but by the **stable XWMS id** called `sub`.
 
 ---
 
 ## 🚀 Quick Installation (Laravel)
 
 ### Step 1: Install the Package
-
-Run this in your terminal:
 
 ```bash
 composer require xwms/package
@@ -40,7 +42,7 @@ XWMS_CLIENT_SECRET=your_secret_here
 XWMS_REDIRECT_URI=http://your-app.test/xwms/validateToken
 ```
 
-> ⚠️ Make sure `.env` is **not** committed to Git — it contains secrets.
+> ✅ Make sure `.env` is **not** committed to Git – it contains secrets.
 
 ### Step 4: Add the XWMS Routes
 
@@ -49,69 +51,141 @@ Edit `routes/web.php` and paste this:
 ```php
 use Illuminate\Support\Facades\Route;
 use XWMS\Package\Controllers\Api\XwmsApiHelper;
+use App\Http\Controllers\HomeController; // or your own controller name
 
 // XWMS Login API routes
 Route::get('/xwms/info', [XwmsApiHelper::class, 'info'])->name('xwms.api.info');
 Route::get('/xwms/auth', [XwmsApiHelper::class, 'auth'])->name('xwms.api.auth');
-Route::get('/xwms/validateToken', [XwmsApiHelper::class, 'authValidate'])->name('xwms.api.validateToken');
+Route::get('/xwms/validateToken', [HomeController::class, 'authValidate'])->name('xwms.api.validateToken');
 ```
 
-That’s it for the short version! ✅
+`authValidate` is **your** method where you decide how to link
+the XWMS user to a local account.  
+Below you’ll see a complete example that uses the **stable `sub` id**.
+
+That’s it for the short version.  
+For a full explanation, keep reading.
 
 ---
 
-## 📖 Full Installation — Step by Step (Explained Like You’re 10)
+## 🧠 Full Installation – Explained Like You’re 10
 
-Let’s walk through this like we’re teaching a beginner. No worries if this is your first time — we’ll take it slow!
-
-### 🧠 Step 1: Think of XWMS Like a Friendly Gatekeeper
+### 1. Think of XWMS Like a Friendly Gatekeeper
 
 Imagine your app has a door. XWMS is a **friendly gatekeeper** that checks who’s allowed in.
-When users click **“Login with XWMS”**, they’re sent to the gatekeeper, who checks their ID. If everything is fine, they’re sent back to your app with a “golden ticket” (a token).
 
-Your Laravel app will use this golden ticket to verify who the user is.
+When users click **“Login with XWMS”**, they:
+
+1. go to the gatekeeper (XWMS)  
+2. log in there  
+3. come back to your app with a **golden ticket** (a token)
+
+Your Laravel app uses that ticket to ask:  
+“Who is this person? What is their id, name, email…?”
 
 ---
 
-### ⚙️ Step 2: Install and Publish
+### 2. Why we don’t link by email anymore
 
-Open your terminal and type:
+In older examples you may see:
+
+> “Find the user by email, or create a new user with this email.”
+
+This works at first, but it is **not professional**:
+
+- people can change their email address
+- sometimes people share an email or lose access
+- if email changes, your link between XWMS and your user breaks
+
+XWMS therefore gives every account a **stable id** called `sub`:
+
+- `sub` stands for “subject”  
+- it never changes, even if the email or name changes  
+- you can think of it as the **number on a library card**
+
+When someone shows their library card, the library does **not**
+care which email they have now – the card number is enough.
+
+We will do the same:  
+we store the `sub` in a small table and use **that** to link the person.
+
+---
+
+### 3. A tiny connection table (XwmsConnection)
+
+Create a migration for a connection table:
 
 ```bash
-composer require xwms/package
-php artisan vendor:publish --tag=xwms-config
+php artisan make:model XwmsConnection -m
 ```
 
-This installs the XWMS library and creates a config file you can edit later in `config/xwms.php`.
+Edit the new migration to look something like:
+
+```php
+Schema::create('xwms_connections', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->string('sub')->unique(); // stable XWMS id
+    $table->timestamps();
+});
+```
+
+Then run:
+
+```bash
+php artisan migrate
+```
+
+Now edit `app/Models/XwmsConnection.php`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class XwmsConnection extends Model
+{
+    protected $fillable = ['user_id', 'sub'];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public static function findBySub(string $sub): ?self
+    {
+        return static::where('sub', $sub)->first();
+    }
+
+    public static function connectUser(User $user, string $sub): self
+    {
+        return static::updateOrCreate(
+            ['sub' => $sub],
+            ['user_id' => $user->id],
+        );
+    }
+}
+```
+
+This model simply says:
+
+- “For this XWMS `sub`, which local user does it belong to?”
 
 ---
 
-### 📂 Step 3: Add Secrets in `.env`
-
-Laravel keeps private information in a file called `.env`. Think of it as a **locked treasure chest** 🗝️.
-
-Open `.env` and add your credentials:
-
-```env
-XWMS_DOMAIN=your_domain_here # like example.com
-XWMS_DOMAIN_ID=your_domain_id_here
-XWMS_CLIENT_SECRET=your_secret_here
-XWMS_REDIRECT_URI=http://your-app.test/xwms/validateToken
-```
-
-You get these values from your XWMS account. Never share them!
-
----
-
-### 🧩 Step 4: Make a Controller for Login
+### 4. Make a Controller for Login
 
 Run this command:
 
 ```bash
-php artisan make:controller AuthController
+php artisan make:controller HomeController
 ```
 
-Now open `app/Http/Controllers/AuthController.php` and replace everything with:
+Now open `app/Http/Controllers/HomeController.php`
+and add the `authValidate` method (shortened to the important part here):
 
 ```php
 <?php
@@ -122,65 +196,79 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\XwmsConnection;
 use Exception;
 use XWMS\Package\Controllers\Api\XwmsApiHelper;
 
-class AuthController extends Controller
+class HomeController extends Controller
 {
-    // Step 1: Redirect to XWMS login page
-    public function redirectToXWMS()
+    public function authValidate()
     {
-        try {
-            return (new XwmsApiHelper)->auth();
-        } catch (\Throwable $th) {
-            logger()->error('XWMS redirect failed', ['error' => $th->getMessage()]);
-            return back()->with('error', 'Login is temporarily unavailable. Please try again later.');
+        $response = XwmsApiHelper::getAuthenticateUser();
+
+        if (($response['status'] ?? null) !== 'success') {
+            return redirect()->route('auth.login');
         }
+
+        $data = $response['data'] ?? [];
+        $sub  = $data['sub'] ?? null;              // stable XWMS id
+
+        if (!$sub) {
+            return redirect()->route('auth.login');
+        }
+
+        // 1) Try existing XWMS connection
+        $connection = XwmsConnection::findBySub($sub);
+        if ($connection && $connection->user) {
+            // Optional: keep local user data in sync with XWMS
+            $this->syncUserFromXwms($connection->user, $data);
+
+            Auth::login($connection->user, true);
+            return redirect()->route('home.index');
+        }
+
+        // 2) No account yet: create one and link it
+        $name    = $data['name'] ?? trim(($data['given_name'] ?? '') . ' ' . ($data['family_name'] ?? ''));
+        $email   = $data['email'] ?? null;
+        $picture = $data['picture'] ?? null;
+
+        $user = new User();
+        $user->name     = $name ?: 'Gebruiker';
+        $user->email    = $email;                       // may be null
+        $user->img      = $picture;
+        $user->password = bcrypt(Str::random(40));
+        $user->save();
+
+        XwmsConnection::connectUser($user, $sub);
+
+        Auth::login($user, true);
+        return redirect()->route('home.index');
     }
 
-    // Step 2: Handle callback and log the user in
-    public function handleXWMSCallback(Request $request)
+    protected function syncUserFromXwms(User $user, array $data): void
     {
-        try {
-            $response = XwmsApiHelper::getAuthenticateUser();
-
-            if (!isset($response['status']) || $response['status'] !== 'success') {
-                throw new Exception('Invalid response from XWMS');
-            }
-
-            $data = $response['data'];
-            $email = $data['email'] ?? null;
-            $name = $data['name'] ?? 'New User';
-
-            if ($email && ($data['email_verified'] ?? false)) {
-                $user = User::firstOrCreate(
-                    ['email' => $email],
-                    ['name' => $name, 'password' => bcrypt(Str::random(32))]
-                );
-
-                Auth::login($user, true);
-                return redirect()->route('dashboard');
-            }
-
-            return redirect()->route('login')->with('error', 'Your email is not verified.');
-        } catch (\Throwable $th) {
-            logger()->error('XWMS login failed', ['error' => $th->getMessage()]);
-            return redirect()->route('login')->with('error', 'Authentication failed. Please try again.');
-        }
+        // Very simple example – adjust to your needs
+        $user->name  = $data['name']  ?? $user->name;
+        $user->email = $data['email'] ?? $user->email;
+        $user->img   = $data['picture'] ?? $user->img;
+        $user->save();
     }
 }
 ```
 
-This controller does two jobs:
+In normal language:
 
-1. Sends users to the XWMS login page.
-2. Handles their return, verifies the token, and logs them in.
+- If we already know this `sub`, we log the user in again.  
+- If we don’t know this `sub`, we create a user **once**, store the `sub`,
+  and next time we recognise them automatically.
+
+Even if they change email or name in XWMS later, the `sub` stays the same.
 
 ---
 
-### 🧭 Step 5: Add Routes
+### 5. Add Routes for the Controller Version
 
-Now open `routes/web.php` and add:
+If you prefer to use your own controller for both steps, you can also do:
 
 ```php
 use App\Http\Controllers\AuthController;
@@ -189,66 +277,62 @@ Route::get('/xwms/auth', [AuthController::class, 'redirectToXWMS'])->name('xwms.
 Route::get('/xwms/validateToken', [AuthController::class, 'handleXWMSCallback'])->name('xwms.callback');
 ```
 
-* `/xwms/auth` sends users to XWMS.
-* `/xwms/validateToken` brings them back after logging in.
+The idea is the same:
+
+- `/xwms/auth` → send the user to XWMS  
+- `/xwms/validateToken` → receive the `token`, use `getAuthenticateUser()`,
+  read `sub`, and link the user via `XwmsConnection`
 
 ---
 
-### 💡 Step 6: Add a Login Button
+### 6. Add a Login Button
 
 In your Blade template (for example `resources/views/login.blade.php`):
 
 ```html
-<a href="{{ route('xwms.auth') }}" class="btn btn-primary">Login with XWMS</a>
+<a href="{{ route('xwms.api.auth') }}" class="btn btn-primary">
+  Login with XWMS
+</a>
 ```
 
 When clicked:
 
-1. The user goes to XWMS.
-2. XWMS verifies them.
-3. XWMS redirects them back.
-4. Laravel logs them in automatically. 🎉
+1. The user goes to XWMS.  
+2. XWMS verifies them.  
+3. XWMS redirects them back with a token.  
+4. Your `authValidate` method reads the `sub`, finds or creates a user, and logs them in.
 
 ---
 
-### 🧰 Step 7: Troubleshooting (If Things Break 😅)
+### 7. Troubleshooting (If Things Break)
 
 If it doesn’t work:
 
-1. Open `storage/logs/laravel.log`.
-2. Search for messages like `XWMS redirect failed` or `XWMS login failed`.
-3. Double-check your `.env` values — especially `XWMS_REDIRECT_URI`.
-4. Make sure your callback URL in `.env` matches the route exactly.
+1. Open `storage/logs/laravel.log`.  
+2. Look for messages like `XWMS redirect failed` or `XWMS login failed`.  
+3. Double‑check your `.env` values – especially `XWMS_REDIRECT_URI`.  
+4. Make sure the callback URL in `.env` matches the route exactly.  
 
 ---
 
-### 🔒 Security Tips
+### 8. Security Tips
 
-* Never share `.env` or commit it to Git.
-* Use HTTPS in production.
-* Handle all tokens securely.
-* Log only safe information — not secrets.
-
----
-
-### 🧩 Summary (For the Grown-ups 😎)
-
-| Step | What It Does                  |
-| ---- | ----------------------------- |
-| 1    | Install XWMS package          |
-| 2    | Publish config                |
-| 3    | Add secrets to `.env`         |
-| 4    | Create Auth controller        |
-| 5    | Add login & callback routes   |
-| 6    | Add a login button            |
-| 7    | Test and check logs if needed |
-
-With these steps, your Laravel app can safely log users in using **XWMS OAuth**. It’s secure, enterprise‑ready, and integrates smoothly with dashboards or admin panels like **Filament**.
+- Never share `.env` or commit it to Git.  
+- Use HTTPS in production.  
+- Treat tokens like passwords – never log them.  
+- Log only safe information (for example status codes and messages).  
 
 ---
 
-**That’s it! 🎉** You’ve connected Laravel with XWMS — the safe and friendly way to let users log in.
+## Summary (for the grown‑ups)
 
+- XWMS returns a stable user id called `sub`.  
+- You create a small `xwms_connections` table that links `sub` to `users.id`.  
+- On every login:
+  - verify the token with `XwmsApiHelper::getAuthenticateUser()`
+  - read `sub`
+  - find or create a user, and keep the link in `xwms_connections`
 
-
+This way, even if a user changes their email, your Laravel app still knows  
+exactly which local account belongs to which XWMS account.
 

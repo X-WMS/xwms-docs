@@ -4,15 +4,19 @@ description: ""
 layout: docs
 ---
 
-# Client OAuth — PHP Installation (XWMS)
+# Client OAuth – PHP Installation (XWMS)
 
-**Description:** Secure, advanced login and authentication APIs for businesses (XWMS). This page focuses on installing and using the `XwmsApiHelperPHP` library in PHP. It's written so even a 10‑year‑old can follow the main ideas, but it also includes full, step‑by‑step technical instructions for developers.
+**Description:** Secure, advanced login and authentication APIs for businesses (XWMS).  
+This page focuses on installing and using the `XwmsApiHelperPHP` library in PHP.
+
+The text is written so that even a non‑developer (or a 10‑year‑old) can
+understand the idea, but it also includes full code for professional use.
+
+**Important:** we link users using the stable XWMS id `sub`, **not** the email address.
 
 ---
 
-## Quick Install ( Fast track )
-
-Follow these three steps to get going quickly.
+## 🚀 Quick Install (Fast Track)
 
 1. **Install with Composer**
 
@@ -22,11 +26,11 @@ composer require xwms/package guzzlehttp/guzzle vlucas/phpdotenv
 
 2. **Create a `.env` file** (recommended)
 
-Create a file called `.env` in your project root:
+Create `.env` in your project root:
 
-```
+```env
 XWMS_CLIENT_ID=your_client_id_here
-XWMS_DOMAIN=your_domain_here # like example.com
+XWMS_DOMAIN=your_domain_here           # like example.com
 XWMS_CLIENT_SECRET=your_secret_here
 XWMS_CLIENT_DOMAIN=your-domain.example
 XWMS_REDIRECT_URI=http://localhost/xwms/validateToken
@@ -35,40 +39,55 @@ XWMS_API_URL=https://api.xwms.example/
 
 3. **Use the helper and visit the authenticate route**
 
-Use the `XwmsApiHelperPHP` class to redirect users to XWMS and validate tokens on return. See the full examples below.
+Use `XwmsApiHelperPHP` to redirect users to XWMS and verify
+the token when they come back.  
+Full examples are shown below.
 
 ---
 
-## Full, Friendly, Step-by-Step Installation (Explained)
+## 🧠 What is happening? (Explained)
 
-Imagine XWMS is a friendly gatekeeper for your website. When someone wants to get into your site, they go to XWMS, XWMS checks who they are, and then lets them back in with a special ticket (a token).
+Imagine a cinema:
 
-We will:
+- XWMS is the **ticket office**.  
+- Your site is the **entrance door**.  
 
-1. Install the software that talks to the gatekeeper.
-2. Tell our app the secret keys that XWMS gives us (we keep them hidden in a `.env` file).
-3. Make two doors (URLs): one to send the user to XWMS, and another to accept them when XWMS sends them back with the ticket.
+When somebody wants to enter:
 
-### Why use `.env`?
+1. You send them to the ticket office (XWMS).  
+2. XWMS checks who they are and gives them a **ticket** (token).  
+3. They come back to your entrance with that ticket.  
+4. Your PHP code shows the ticket to XWMS again (“Is this real?”).  
+5. XWMS responds with **who this person is** – including a stable id `sub`.  
 
-Think of `.env` like a locked treasure chest in your project where you hide secret keys. We use `vlucas/phpdotenv` to open that chest when the app starts.
+You then use that `sub` to find or create a local user.
 
-**Install dotenv:**
+---
 
-```bash
-composer require vlucas/phpdotenv
-```
+## Why we do **not** link by email
 
-Then add this at the start of your app (for example `public/index.php` or `bootstrap.php`):
+A naive solution is:
 
-```php
-require __DIR__ . '/vendor/autoload.php';
+> “Look up the user by email. If not found, create them.”
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->safeLoad(); // loads .env if present, but won't crash if missing
-```
+Problems:
 
-Now you can read your secrets with `getenv('XWMS_CLIENT_ID')` or `$_ENV['XWMS_CLIENT_ID']`.
+- users can change their email  
+- some people share an email address  
+- email alone is not a strong identity key  
+
+If the email changes, your local account and the XWMS account
+can get out of sync.
+
+XWMS therefore gives you a **stable id** called `sub`:
+
+- it never changes for that account  
+- it is unique per user  
+- it is like the **number on an ID card**  
+
+So your database should remember:
+
+> “Which local user belongs to which XWMS `sub`?”
 
 ---
 
@@ -88,69 +107,95 @@ A small, safe layout for a plain PHP app:
   composer.json
 ```
 
-Put `xwms.php` in `config/` with default fallback values that read from environment variables.
-
 Example `config/xwms.php`:
 
 ```php
 <?php
 return [
-    'client_id' => getenv('XWMS_CLIENT_ID') ?: null,
-    'client_secret' => getenv('XWMS_CLIENT_SECRET') ?: null,
-    'client_domain' => getenv('XWMS_CLIENT_DOMAIN') ?: null,
-    'client_redirect' => getenv('XWMS_REDIRECT_URI') ?: 'http://localhost/xwms/validateToken',
-    'xwms_api_url' => rtrim(getenv('XWMS_API_URL') ?: 'https://api.xwms.example/', '/') . '/',
+    'client_id'      => getenv('XWMS_CLIENT_ID') ?: null,
+    'client_secret'  => getenv('XWMS_CLIENT_SECRET') ?: null,
+    'client_domain'  => getenv('XWMS_CLIENT_DOMAIN') ?: null,
+    'client_redirect'=> getenv('XWMS_REDIRECT_URI') ?: 'http://localhost/xwms/validateToken',
+    'xwms_api_url'   => rtrim(getenv('XWMS_API_URL') ?: 'https://api.xwms.example/', '/') . '/',
 ];
 ```
 
 ---
 
-## The `XwmsApiHelperPHP` Class — How it Works (Short)
+## Loading `.env` (Secrets)
 
-This helper does three main things:
+Think of `.env` as a **locked box** with your secret keys.
+We use `vlucas/phpdotenv` to open that box when the app starts:
 
-1. Builds requests with your client id/secret.
-2. Asks XWMS for a redirect URL (`sign-token`) and redirects the user there.
-3. After the user returns, it verifies the token with `sign-token-verify`.
+```php
+require __DIR__ . '/vendor/autoload.php';
 
-The class uses Guzzle to make HTTP calls and expects JSON responses.
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad(); // loads .env if present, but won't crash if missing
+```
+
+Now you can read your settings with `getenv('XWMS_CLIENT_ID')`.
 
 ---
 
-## Example A — Using `XwmsApiHelperPHP` (Recommended)
+## The `XwmsApiHelperPHP` Class – Short Overview
 
-This example shows a minimal plain PHP flow. Place the helper in `/src/XwmsApiHelperPHP.php` (your class as provided).
+The helper does three things:
 
-**public/index.php** (very small example)
+1. Builds requests with your client id / secret.  
+2. Asks XWMS for a redirect URL (`sign-token`) and sends the user there.  
+3. After the user returns, verifies the token with `sign-token-verify`.  
+
+It uses Guzzle for HTTP and expects JSON responses.
+
+---
+
+## Example A – Minimal Flow With Stable `sub` Linking (Recommended)
+
+This example uses:
+
+- `/xwms/auth` – send user to XWMS  
+- `/xwms/validateToken` – receive token, verify, and log the user in  
+
+**public/index.php** (simplified example)
 
 ```php
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-// load env
+use XWMS\Package\Controllers\Api\XwmsApiHelperPHP;
+
+// load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->safeLoad();
 
-use XWMS\Package\Controllers\Api\XwmsApiHelperPHP;
-
-$path = $_SERVER['REQUEST_URI'];
+// very simple routing
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 if ($path === '/xwms/auth') {
-    // redirect user to XWMS
     $helper = new XwmsApiHelperPHP();
-    $helper->auth(); // this will send a Location header and exit
+    $helper->auth();            // redirects to XWMS and exits
 }
 
 if ($path === '/xwms/validateToken') {
     try {
         $helper = new XwmsApiHelperPHP();
-        $result = $helper->authValidate(); // will POST token to verify
+        $result = $helper->authValidate();   // verifies token, returns data array
 
-        // Example result handling
         if (!empty($result['status']) && $result['status'] === 'success') {
-            // safely extract user fields
-            $user = $result['data'] ?? [];
-            echo "Welcome, " . htmlspecialchars($user['name'] ?? 'User') . "!";
+            $userData = $result['data'] ?? [];
+
+            // --- Professional linking: use "sub", not email ---
+            $sub = $userData['sub'] ?? null;
+            if (!$sub) {
+                throw new Exception('Missing XWMS sub in response.');
+            }
+
+            // Pseudo‑code – replace with your own DB logic:
+            $user = findOrCreateUserBySub($sub, $userData);
+
+            // Here you would create a session / cookie for $user.
+            echo "Welcome, " . htmlspecialchars($user['name']) . "!";
         } else {
             echo "Authentication failed: " . htmlspecialchars(json_encode($result));
         }
@@ -160,23 +205,81 @@ if ($path === '/xwms/validateToken') {
     }
 }
 
-// otherwise show a simple link
-
 if ($path === '/') {
     echo '<a href="/xwms/auth">Login with XWMS</a>';
 }
 ```
 
-**Notes:**
+The key part is the `findOrCreateUserBySub` function.  
+Here is a very simple **example** implementation in plain PHP with PDO:
 
-* `auth()` calls the API, gets a redirect URI, and issues `header('Location: ...')`.
-* `authValidate()` reads `$_GET['token']` and calls `sign-token-verify`.
+```php
+function getPdo(): PDO
+{
+    return new PDO('mysql:host=localhost;dbname=app', 'user', 'pass', [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    ]);
+}
+
+function findOrCreateUserBySub(string $sub, array $userData): array
+{
+    $pdo = getPdo();
+
+    // 1) Look for an existing link by sub
+    $stmt = $pdo->prepare("
+        SELECT u.*
+        FROM xwms_connections xc
+        JOIN users u ON u.id = xc.user_id
+        WHERE xc.sub = :sub
+        LIMIT 1
+    ");
+    $stmt->execute(['sub' => $sub]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user) {
+        // Optional: sync some fields from XWMS
+        return $user;
+    }
+
+    // 2) No user yet → create one
+    $name  = $userData['name'] ?? trim(($userData['given_name'] ?? '') . ' ' . ($userData['family_name'] ?? ''));
+    $email = $userData['email'] ?? null;
+
+    $stmt = $pdo->prepare("INSERT INTO users (name, email, password_hash) VALUES (:name, :email, :password)");
+    $stmt->execute([
+        'name'     => $name ?: 'User',
+        'email'    => $email,
+        'password' => password_hash(bin2hex(random_bytes(20)), PASSWORD_DEFAULT),
+    ]);
+
+    $userId = (int) $pdo->lastInsertId();
+
+    // 3) Store the XWMS sub in a connection table
+    $stmt = $pdo->prepare("INSERT INTO xwms_connections (user_id, sub) VALUES (:user_id, :sub)");
+    $stmt->execute(['user_id' => $userId, 'sub' => $sub]);
+
+    return [
+        'id'    => $userId,
+        'name'  => $name ?: 'User',
+        'email' => $email,
+    ];
+}
+```
+
+In database terms this means:
+
+- table `users` contains your normal users  
+- table `xwms_connections` contains `user_id` + `sub`  
+- you always look up by `sub` when someone logs in via XWMS  
+
+Even if the user changes email in XWMS, the `sub` stays the same,
+so your link keeps working.
 
 ---
 
-## Example B — Not using the helper (Manual Guzzle flow)
+## Example B – Manual Guzzle Flow (More Control)
 
-If you want more control or don't want to use the helper class, here is how to perform the same flow manually.
+If you prefer to skip the helper and call the API yourself:
 
 ```php
 <?php
@@ -187,94 +290,82 @@ use GuzzleHttp\Client;
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->safeLoad();
 
-$clientId = getenv('XWMS_CLIENT_ID');
+$clientId     = getenv('XWMS_CLIENT_ID');
 $clientSecret = getenv('XWMS_CLIENT_SECRET');
 $clientDomain = getenv('XWMS_CLIENT_DOMAIN');
-$apiBase = rtrim(getenv('XWMS_API_URL'), '/') . '/';
+$apiBase      = rtrim(getenv('XWMS_API_URL'), '/') . '/';
 
 $guzzle = new Client(['base_uri' => $apiBase, 'timeout' => 10]);
 
 // 1) Ask for a sign-token (get redirect url)
-try {
-    $resp = $guzzle->post('sign-token', [
-        'headers' => [
-            'X-Client-Id' => $clientId,
-            'X-Client-Secret' => $clientSecret,
-            'X-Client-Domain' => $clientDomain,
-            'Accept' => 'application/json',
-        ],
-        'json' => [
-            'redirect_url' => getenv('XWMS_REDIRECT_URI')
-        ]
-    ]);
+$resp = $guzzle->post('sign-token', [
+    'headers' => [
+        'X-Client-Id'     => $clientId,
+        'X-Client-Secret' => $clientSecret,
+        'X-Client-Domain' => $clientDomain,
+        'Accept'          => 'application/json',
+    ],
+    'json' => [
+        'redirect_url' => getenv('XWMS_REDIRECT_URI'),
+    ],
+]);
 
-    $body = json_decode((string) $resp->getBody(), true);
-    $redirectUrl = $body['data']['url'] ?? $body['redirect_url'] ?? null;
-    if ($redirectUrl) {
-        header('Location: ' . $redirectUrl);
-        exit;
-    }
-} catch (\Throwable $e) {
-    echo 'Error contacting XWMS: ' . htmlspecialchars($e->getMessage());
+$body        = json_decode((string) $resp->getBody(), true);
+$redirectUrl = $body['data']['url'] ?? $body['redirect_url'] ?? null;
+
+if ($redirectUrl) {
+    header('Location: ' . $redirectUrl);
     exit;
 }
 
 // 2) When user returns to /xwms/validateToken?token=abc -> verify:
 
-// Example verification request
-try {
-    $token = $_GET['token'] ?? null;
-    $resp = $guzzle->post('sign-token-verify', [
-        'headers' => [
-            'X-Client-Id' => $clientId,
-            'X-Client-Secret' => $clientSecret,
-            'X-Client-Domain' => $clientDomain,
-            'Accept' => 'application/json',
-        ],
-        'json' => [
-            'token' => $token
-        ]
-    ]);
+$token = $_GET['token'] ?? null;
+$resp  = $guzzle->post('sign-token-verify', [
+    'headers' => [
+        'X-Client-Id'     => $clientId,
+        'X-Client-Secret' => $clientSecret,
+        'X-Client-Domain' => $clientDomain,
+        'Accept'          => 'application/json',
+    ],
+    'json' => [
+        'token' => $token,
+    ],
+]);
 
-    $data = json_decode((string) $resp->getBody(), true);
-    // handle $data similar to helper example
-} catch (\Throwable $e) {
-    echo 'Verification failed: ' . htmlspecialchars($e->getMessage());
+$data = json_decode((string) $resp->getBody(), true);
+
+if (($data['status'] ?? null) === 'success') {
+    $userData = $data['data'] ?? [];
+    // again: handle via sub
+    $user = findOrCreateUserBySub($userData['sub'] ?? '', $userData);
 }
 ```
 
-This manual approach does the exact same steps as the helper but gives you the freedom to change headers, timeouts, or logging.
+This does the same as the helper, but with more manual control.
 
 ---
 
-## Security Best Practices (Very Important)
+## Security Best Practices
 
-1. **Never commit `.env` to git.** Add `.env` to `.gitignore`.
-2. **Limit secret access.** Only your server and deployment system should have the `.env` file.
-3. **Use HTTPS** for your `XWMS_REDIRECT_URI` and your app in production.
-4. **Validate inputs.** Never trust `$_GET` or `$_POST` without checking and sanitizing.
-5. **Use short token lifetimes** and treat returned tokens as sensitive. Store them encrypted if you must store.
-6. **Log safely.** Do not log client secrets, tokens, or sensitive user info. Log only useful debugging info.
-
----
-
-## Troubleshooting Tips (Practical)
-
-* **If login doesn't redirect:** check `.env` values and the `XWMS_API_URL` and `XWMS_REDIRECT_URI`.
-* **If token verification fails:** inspect the HTTP response body in logs (`storage/logs` or your error log) for error messages.
-* **If you see `Missing required client configuration.`** — that means `client_id`, `client_secret`, or `client_domain` were not found by the code. Check your `config/xwms.php` and `.env` values.
+1. **Never commit `.env` to git.** Add `.env` to `.gitignore`.  
+2. **Use HTTPS** in production for both your site and the redirect URL.  
+3. **Validate all inputs.** Never trust raw `$_GET` or `$_POST`.  
+4. **Treat tokens as secrets.** Do not log them or expose them to the browser.  
+5. **Log safely.** Log status codes and messages, not client secrets or tokens.  
 
 ---
 
-## Example Responses (What the API might return)
+## Example of a Successful Response
 
-A successful verify may look like:
+XWMS may return a payload like:
 
 ```json
 {
   "status": "success",
   "message": "Successful authenticated",
   "data": {
+    "sub": "xwms-user-1234",
     "email": "jane@example.com",
     "name": "Jane Doe",
     "email_verified": true
@@ -282,7 +373,10 @@ A successful verify may look like:
 }
 ```
 
-An error may look like:
+Note the `sub` field – this is the **stable id** you should store
+in your own `xwms_connections` table.
+
+An error might look like:
 
 ```json
 {
@@ -292,22 +386,13 @@ An error may look like:
 }
 ```
 
-Always check `status` and do not assume `data` exists.
+Always check `status` before trusting `data`.
 
 ---
 
-## Useful Extra Tips
+## Summary (One‑liner)
 
-* Use environment-specific `.env` files (for example `.env.local`, `.env.production`) and a secure deployment pipeline.
-* If you deploy on a platform (Heroku, DigitalOcean, Vercel), use the platform's secret management to store these keys.
-* For local development you can use `php -S localhost:8000 -t public` to quickly test.
+Install via Composer, keep secrets in `.env`, use `XwmsApiHelperPHP`
+or plain Guzzle to handle the redirect and token verification, and **always**
+link accounts using the stable XWMS `sub` id instead of the email address.
 
----
-
-## Summary (One-liner)
-
-Install via Composer, keep secrets in `.env` with `vlucas/phpdotenv`, use `XwmsApiHelperPHP` to manage the redirect & verification flow (or do it manually with Guzzle), and always follow security best practices.
-
----
-
-*End of document.*
