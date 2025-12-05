@@ -152,10 +152,17 @@ class XwmsApiHelper
         return (array) self::getFromEndpoint("info");
     }
 
-    public static function getUserAddress(string $email, array $data = []): array
+    public static function getUserAddress(string|int $sub, array $data = []): array
     {
         self::setup();
-        $response = (array) self::postToEndpoint("get/user/address", array_merge(['email' => $email], $data));
+        $response = (array) self::postToEndpoint("get/user/address", array_merge(['sub' => (int) $sub], $data));
+        return $response;
+    }
+
+    public static function getUserInfo(string|int $sub, array $data = []): array
+    {
+        self::setup();
+        $response = (array) self::postToEndpoint("get/user/info", array_merge(['sub' => (int) $sub], $data));
         return $response;
     }
 }

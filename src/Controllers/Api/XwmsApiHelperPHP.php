@@ -150,9 +150,14 @@ class XwmsApiHelperPHP
     /**
      * Get address info for a specific user by email
      */
-    public function getUserAddress(string $email, array $data = []): array
+    public function getUserAddress(string|int $sub, array $data = []): array
     {
-        return $this->postToEndpoint("get/user/address", array_merge(['email' => $email], $data));
+        return $this->postToEndpoint("get/user/address", array_merge(['sub' => (int) $sub], $data));
+    }
+
+    public function getUserInfo(string|int $sub, array $data = []): array
+    {
+        return $this->postToEndpoint("get/user/info", array_merge(['sub' => (int) $sub], $data));
     }
 
     public function auth(): void
