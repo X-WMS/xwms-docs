@@ -9,6 +9,7 @@ use GuzzleHttp\Exception\RequestException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class XwmsApiHelper
@@ -242,8 +243,15 @@ class XwmsApiHelper
                 $value = $transforms[$local]($value, $userData, $options);
             }
 
-            if ($skipNulls && $value === null) {
-                continue;
+            if ($local === 'img') {
+                $value = self::syncUserImage($value, $options['user'] ?? null, $options);
+                if ($skipNulls && $value === null) {
+                    continue;
+                }
+            } else {
+                if ($skipNulls && $value === null) {
+                    continue;
+                }
             }
 
             $attributes[$local] = $value;
@@ -257,6 +265,124 @@ class XwmsApiHelper
         }
 
         return $attributes;
+    }
+
+    protected static function resolveImageSyncOptions(array $options = []): array
+    {
+        $defaults = [
+            'enabled' => false,
+            'disk' => 'public',
+            'directory' => 'users/xwms',
+            'delete_old' => true,
+            'timeout' => 10,
+            'max_kb' => null,
+        ];
+
+        $config = config('xwms.user_image_sync', []);
+        $overrides = $options['image_sync'] ?? [];
+
+        return array_merge($defaults, $config, $overrides);
+    }
+
+    protected static function syncUserImage(mixed $value, ?object $user, array $options = []): mixed
+    {
+        $opts = self::resolveImageSyncOptions($options);
+        if (!($opts['enabled'] ?? false)) {
+            return $value;
+        }
+
+        if (!is_string($value) || $value === '') {
+            if ($user && ($opts['delete_old'] ?? true)) {
+                self::deleteStoredImage($user->img ?? null, $opts);
+            }
+            return null;
+        }
+
+        if (!self::isRemoteUrl($value)) {
+            return $value;
+        }
+
+        $storedPath = self::downloadRemoteImage($value, $opts);
+        if ($storedPath === null) {
+            return $user?->img ?? null;
+        }
+
+        if ($user && ($opts['delete_old'] ?? true)) {
+            self::deleteStoredImage($user->img ?? null, $opts, $storedPath);
+        }
+
+        return $storedPath;
+    }
+
+    protected static function isRemoteUrl(string $value): bool
+    {
+        return Str::startsWith($value, ['http://', 'https://', '//']);
+    }
+
+    protected static function downloadRemoteImage(string $url, array $options = []): ?string
+    {
+        $normalizedUrl = Str::startsWith($url, '//') ? "https:{$url}" : $url;
+
+        try {
+            $client = new Client([
+                'timeout' => $options['timeout'] ?? 10,
+                'http_errors' => false,
+            ]);
+
+            $response = $client->get($normalizedUrl);
+            if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
+                return null;
+            }
+
+            $body = (string) $response->getBody();
+            $maxKb = $options['max_kb'] ?? null;
+            if (is_int($maxKb) && $maxKb > 0 && strlen($body) > ($maxKb * 1024)) {
+                return null;
+            }
+
+            $contentType = $response->getHeaderLine('Content-Type');
+            $extension = self::extensionFromContentType($contentType);
+
+            $disk = $options['disk'] ?? 'public';
+            $directory = trim((string) ($options['directory'] ?? ''), '/');
+            $filename = 'xwms_' . Str::uuid() . '.' . $extension;
+            $path = $directory !== '' ? "{$directory}/{$filename}" : $filename;
+
+            Storage::disk($disk)->put($path, $body);
+
+            return $path;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    protected static function extensionFromContentType(string $contentType): string
+    {
+        $contentType = strtolower(trim(explode(';', $contentType)[0] ?? ''));
+        return match ($contentType) {
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            'image/svg+xml' => 'svg',
+            'image/jpeg', 'image/jpg' => 'jpg',
+            default => 'jpg',
+        };
+    }
+
+    protected static function deleteStoredImage(?string $path, array $options = [], ?string $keepPath = null): void
+    {
+        if (!$path || self::isRemoteUrl($path)) {
+            return;
+        }
+
+        if ($keepPath !== null && $path === $keepPath) {
+            return;
+        }
+
+        $disk = $options['disk'] ?? 'public';
+        if (Storage::disk($disk)->exists($path)) {
+            Storage::disk($disk)->delete($path);
+        }
     }
 
     protected static function applyUserAttributes(object $user, array $attributes): array
@@ -364,7 +490,8 @@ class XwmsApiHelper
             if ($user) {
                 $action = 'existing_connection';
                 if ($updateExisting) {
-                    $attributes = self::mapUserAttributes($userData, $options);
+                    $optionsWithUser = array_merge($options, ['user' => $user]);
+                    $attributes = self::mapUserAttributes($userData, $optionsWithUser);
                     self::applyUserAttributes($user, $attributes);
                     $action = 'updated_existing_user';
                 }
@@ -374,7 +501,8 @@ class XwmsApiHelper
                     $user = $userClass::query()->where('email', $email)->first();
                     if ($user) {
                         $action = 'linked_by_email';
-                        $attributes = self::mapUserAttributes($userData, $options);
+                        $optionsWithUser = array_merge($options, ['user' => $user]);
+                        $attributes = self::mapUserAttributes($userData, $optionsWithUser);
                         self::applyUserAttributes($user, $attributes);
                     }
                 }
@@ -450,7 +578,8 @@ class XwmsApiHelper
             }
 
             $userData = self::extractUserData($response);
-            $attributes = self::mapUserAttributes($userData, $options);
+            $optionsWithUser = array_merge($options, ['user' => $user]);
+            $attributes = self::mapUserAttributes($userData, $optionsWithUser);
             $result = self::applyUserAttributes($user, $attributes);
 
             return [

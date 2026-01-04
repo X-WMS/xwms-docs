@@ -27,5 +27,13 @@ return [
         'img' => 'picture',
     ],
     'user_field_transforms' => [
-    ]
+    ],
+    'user_image_sync' => [
+        'enabled' => false,
+        'disk' => 'public',
+        'directory' => 'users/xwms',
+        'delete_old' => true,
+        'timeout' => 10,
+        'max_kb' => null,
+    ],
 ];
