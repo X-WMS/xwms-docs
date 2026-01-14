@@ -27,7 +27,7 @@ jobs:
 
       - name: Install deps
         working-directory: js
-        run: npm ci
+        run: npm install
 
       - name: Build
         working-directory: js
