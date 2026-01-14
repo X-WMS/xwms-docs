@@ -25,3 +25,10 @@ export {
   syncUserImage,
 } from "./image.js";
 export type { ImageSyncOptions, FileStorage } from "./image.js";
+
+export {
+  createXwmsExpressRouter,
+  createXwmsHandlers,
+  createRequireAuth,
+} from "./express.js";
+export type { XwmsExpressOptions } from "./express.js";
