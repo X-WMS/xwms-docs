@@ -72,6 +72,54 @@ Always link by `sub`.
 
 ---
 
+## Response format (always JSON)
+
+All XWMS responses use the same envelope:
+
+```json
+{
+  "status": "success",
+  "message": "Human readable message",
+  "data": { "..." : "payload" }
+}
+```
+
+- `status` is `success` or `error`
+- `message` explains what happened
+- `data` contains the payload for that endpoint
+
+---
+
+## sign-token response (start auth)
+
+When you call `sign-token`, XWMS responds with:
+
+- `client_id` (string)
+- `token` (string)
+- `email` (string, if available)
+- `expires_at` (ISO 8601 string)
+- `url` (string, the login/redirect URL)
+
+The helper handles the redirect URL for you.
+
+---
+
+## sign-token-verify response (user data)
+
+When you verify the token, XWMS returns user data in `data`:
+
+- `sub` (string, stable user id)
+- `name` (string)
+- `given_name` (string)
+- `family_name` (string or null)
+- `email` (string)
+- `email_verified` (boolean)
+- `picture` (string URL)
+
+Always link users by `sub`.
+
+---
+
 ## Example helper usage
 
 ```php

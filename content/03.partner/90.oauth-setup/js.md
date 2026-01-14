@@ -103,6 +103,55 @@ XWMS returns a token directly to your callback URL.
 
 ---
 
+## Response format (always JSON)
+
+All XWMS responses use the same envelope:
+
+```json
+{
+  "status": "success",
+  "message": "Human readable message",
+  "data": { "..." : "payload" }
+}
+```
+
+- `status` is `success` or `error`
+- `message` explains what happened
+- `data` contains the payload for that endpoint
+
+---
+
+## sign-token response (start auth)
+
+When you call `sign-token`, XWMS responds with:
+
+- `client_id` (string)
+- `token` (string)
+- `email` (string, if available)
+- `expires_at` (ISO 8601 string)
+- `url` (string, the login/redirect URL)
+
+The SDK/Helper uses `url` and redirects for you, so you typically do not
+handle it manually.
+
+---
+
+## sign-token-verify response (user data)
+
+When you verify the token, XWMS returns user data in `data`:
+
+- `sub` (string, stable user id)
+- `name` (string)
+- `given_name` (string)
+- `family_name` (string or null)
+- `email` (string)
+- `email_verified` (boolean)
+- `picture` (string URL)
+
+Always link users by `sub`.
+
+---
+
 ## Full Manual Setup (no router, full control)
 
 If you want to build your own routes, use the handlers:
