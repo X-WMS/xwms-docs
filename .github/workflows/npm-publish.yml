@@ -1,0 +1,45 @@
+name: Publish npm package
+
+on:
+  release:
+    types: [published]
+  # Optioneel: ook publishen als je een tag pusht
+  # push:
+  #   tags:
+  #     - "js-v*"
+  #     - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install deps
+        working-directory: js
+        run: npm ci
+
+      - name: Build
+        working-directory: js
+        run: npm run build
+
+      - name: Publish
+        working-directory: js
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Als je package scoped is (@scope/name), gebruik:
+          # npm publish --access public
+          #
+          # Als je package unscoped is (name), gebruik:
+          npm publish
