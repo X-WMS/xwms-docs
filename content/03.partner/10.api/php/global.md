@@ -58,6 +58,10 @@ $info = (new XwmsApiHelperPHP())->info();
 **Endpoint:** `POST /api/global/countries`  
 **Auth:** client credentials
 
+**Country format**
+- `short_name` is **ISO‑2** (e.g. `NL`, `DE`)
+- `iso_alpha3` is **ISO‑3** (e.g. `NLD`, `DEU`)
+
 **Expected response (shortened)**
 ```json
 {

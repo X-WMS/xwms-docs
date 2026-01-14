@@ -85,6 +85,11 @@ const info = await xwms.getUserInfo(sub, { socials: true });
 **Auth:** client credentials  
 **Scope:** `useraddresses`
 
+**Country format**
+- `country` is a **country code**, not an id.
+- Use **ISO‑2** (e.g. `NL`, `DE`) or **ISO‑3** (e.g. `NLD`, `DEU`).
+- The API looks up the country in the database and converts it to `country_id`.
+
 **Actions**
 - `list`
 - `create`
@@ -112,7 +117,7 @@ const info = await xwms.getUserInfo(sub, { socials: true });
     "house_number": "10A",
     "street": "Mainstreet",
     "city": "Amsterdam",
-    "country_id": 1
+    "country": "NL"
   }
 }
 ```
