@@ -1,260 +1,187 @@
 ---
-title: Js/Node Installation
+title: JS/Node Installation
 description: ""
 layout: docs
 ---
 
-# XWMS Authentication – JavaScript / Node.js Guide
+# JavaScript / Node.js — XWMS OAuth Setup
 
-This guide explains how to connect your **JavaScript** or **Node.js** app to XWMS for secure login.
-You can use it with Express, Next.js, NestJS or any other Node backend.
+This is the **official** JS/Node setup guide for XWMS authentication.
+It explains the real flow used by XWMS (token redirect + verify),
+not a generic OAuth example.
 
-We start with a **short version**, then a **simple explanation**  
-so that even someone who doesn’t code (or a 10‑year‑old) can follow the idea.
-
-The important idea: when XWMS sends user data back, you should link
-accounts using the **stable `sub` id**, not the email address.
+Important rule: **link users by the stable `sub` id**, never by email.
 
 ---
 
-## 🚀 Short Version (Developers Who Just Want It Working)
+## Quick Setup (the fastest way)
 
-### 1. Create an XWMS App
-
-In your XWMS developer portal, create an app and copy:
-
-- `client_id`
-- `domain`
-- `client_secret`
-- `redirect_uri`
-
-### 2. Install Dependencies
+### 1) Install the package
 
 ```bash
-npm install express axios dotenv
+npm install xwms-package
 ```
 
-### 3. Add Environment Variables
-
-Create a `.env` file in your project:
+### 2) Add env variables
 
 ```env
 XWMS_CLIENT_ID=your_client_id_here
+XWMS_CLIENT_SECRET=your_client_secret_here
 XWMS_DOMAIN=your_domain_here     # like example.com
-XWMS_CLIENT_SECRET=your_secret_here
-XWMS_REDIRECT_URI=http://localhost:3000/xwms/callback
-XWMS_AUTH_URL=https://xwms.com/oauth/authorize
-XWMS_TOKEN_URL=https://xwms.com/oauth/token
-XWMS_USERINFO_URL=https://xwms.com/api/userinfo
+XWMS_REDIRECT_URI=http://localhost:3000/api/auth/xwms/callback
+XWMS_API_URI=http://127.0.0.1:8000/api/
 ```
 
-### 4. Build Your Express App
+### 3) Plug in the Express router (drop-in)
 
 ```js
-import express from 'express';
-import axios from 'axios';
-import dotenv from 'dotenv';
+import express from "express";
+import session from "express-session";
+import { XwmsClient, createXwmsExpressRouter, createNodeStorage } from "xwms-package";
 
-dotenv.config();
 const app = express();
-const PORT = 3000;
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
 
-// 1) Redirect user to XWMS login page
-app.get('/login', (req, res) => {
-  const redirectUrl =
-    `${process.env.XWMS_AUTH_URL}` +
-    `?response_type=code` +
-    `&client_id=${process.env.XWMS_CLIENT_ID}` +
-    `&redirect_uri=${encodeURIComponent(process.env.XWMS_REDIRECT_URI)}`;
-
-  res.redirect(redirectUrl);
+const xwms = new XwmsClient({
+  apiUri: process.env.XWMS_API_URI,
+  clientId: process.env.XWMS_CLIENT_ID,
+  clientSecret: process.env.XWMS_CLIENT_SECRET,
+  domain: process.env.XWMS_DOMAIN,
+  redirectUri: process.env.XWMS_REDIRECT_URI,
 });
 
-// 2) Handle XWMS callback and exchange code for access token
-app.get('/xwms/callback', async (req, res) => {
-  const code = req.query.code;
-  if (!code) return res.status(400).send('Missing code');
+const adapter = {
+  findConnectionBySub: async (sub) => db.xwmsConnections.findBySub(sub),
+  findUserByEmail: async (email) => db.users.findByEmail(email),
+  createUser: async (attrs) => db.users.create(attrs),
+  updateUser: async (user, attrs) => db.users.update(user.id, attrs),
+  connectUser: async (user, sub) => db.xwmsConnections.connect(user.id, sub),
+  getSubForUser: async (user) => db.xwmsConnections.getSub(user.id),
+};
 
-  try {
-    const tokenResponse = await axios.post(process.env.XWMS_TOKEN_URL, {
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: process.env.XWMS_REDIRECT_URI,
-      client_id: process.env.XWMS_CLIENT_ID,
-      domain: process.env.XWMS_DOMAIN,
-      client_secret: process.env.XWMS_CLIENT_SECRET,
-    });
-
-    const accessToken = tokenResponse.data.access_token;
-
-    // 3) Get user info
-    const userResponse = await axios.get(process.env.XWMS_USERINFO_URL, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
-    const user = userResponse.data;
-
-    // 4) Professional linking: use the stable "sub" id
-    // pseudo-code: findOrCreateUserBySub(user.sub, user);
-    res.send(`Welcome ${user.name || 'User'} (sub: ${user.sub})`);
-  } catch (error) {
-    console.error(error.response?.data || error.message);
-    res.status(500).send('Login failed');
-  }
-});
-
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.use(
+  "/api/auth",
+  createXwmsExpressRouter({
+    client: xwms,
+    adapter,
+    createRouter: () => express.Router(),
+    imageSync: {
+      enabled: true,
+      directory: "data/xwms",
+      storage: createNodeStorage(process.cwd()),
+    },
+    redirectAfterLogin: "/dashboard",
+  })
+);
 ```
 
-Then open <http://localhost:3000/login> and try logging in.
+Now your routes are ready:
+
+- `GET /api/auth/login`
+- `GET /api/auth/xwms/callback`
+- `GET /api/auth/me`
+- `POST /api/auth/sync`
+- `GET /api/auth/avatar`
+- `POST /api/auth/logout`
 
 ---
 
-## 🧠 Full Explanation – Like You’re 10
+## What actually happens (real XWMS flow)
 
-### 1. Playground, Guard and Ticket
+1) You send the user to XWMS using **sign-token**  
+2) XWMS authenticates the user  
+3) XWMS redirects back with a **token**  
+4) Your server verifies the token using **sign-token-verify**  
+5) You store the user with the stable **sub** id
 
-Imagine your app is a **playground**.  
-XWMS is a **security guard** who checks who may enter.
-
-When someone wants to play:
-
-1. You send them to the guard (XWMS).  
-2. The guard checks who they are.  
-3. If everything is ok, the guard gives them a **ticket** (a token).  
-4. They come back to your playground and show the ticket.  
-
-Your Node server then uses that ticket to ask XWMS:
-
-> “Who is this? What is their id, name, email…?”
+This is **not** the OAuth code exchange flow used by Google.
+XWMS returns a token directly to your callback URL.
 
 ---
 
-### 2. Why we don’t link users by email
+## Full Manual Setup (no router, full control)
 
-Many tutorials say:
-
-> “Find the user by email, or create a new user with this email.”
-
-That looks easy, but it has problems:
-
-- people can change their email  
-- someone can lose access to their email  
-- in some companies one email is shared by several people  
-
-If email changes, your link between “XWMS account” and “your user” breaks.
-
-So XWMS gives every account a **stable id** called `sub`:
-
-- it never changes  
-- it works across devices and sessions  
-- you can think of it as the **number on a bus card or library card**
-
-We store this `sub` in our own database and use **that** to find the user.
-
----
-
-### 3. Pseudo‑code: professional account linking in Node
-
-Below is simple pseudo‑code for a typical handler.
-It is intentionally written in a clear way, not framework‑specific:
+If you want to build your own routes, use the handlers:
 
 ```js
-// userData is what you get back from XWMS after verification
-async function handleXwmsUser(userData) {
-  const sub = userData.sub; // stable XWMS id
-  if (!sub) throw new Error('Missing XWMS sub');
+import { XwmsClient, createXwmsHandlers } from "xwms-package";
 
-  // 1) Try to find an existing link by sub
-  let link = await db.xwms_connections.findOne({ sub }).populate('user');
+const xwms = new XwmsClient({
+  apiUri: process.env.XWMS_API_URI,
+  clientId: process.env.XWMS_CLIENT_ID,
+  clientSecret: process.env.XWMS_CLIENT_SECRET,
+  domain: process.env.XWMS_DOMAIN,
+  redirectUri: process.env.XWMS_REDIRECT_URI,
+});
 
-  if (link && link.user) {
-    // Optional: update local user data from XWMS
-    link.user.name = userData.name ?? link.user.name;
-    link.user.email = userData.email ?? link.user.email;
-    await link.user.save();
+const handlers = createXwmsHandlers({
+  client: xwms,
+  adapter,
+});
 
-    return link.user; // log this user in
-  }
-
-  // 2) No account yet: create one and connect it to this sub
-  const name =
-    userData.name ??
-    `${userData.given_name || ''} ${userData.family_name || ''}`.trim() ||
-    'User';
-
-  const user = await db.users.create({
-    name,
-    email: userData.email ?? null,
-    avatar: userData.picture ?? null,
-    // generate a long random password so this account is safe
-    passwordHash: generateRandomPasswordHash(),
-  });
-
-  await db.xwms_connections.create({ userId: user.id, sub });
-
-  return user;
-}
+app.get("/api/auth/login", handlers.login);
+app.get("/api/auth/xwms/callback", handlers.callback);
+app.get("/api/auth/me", handlers.me);
+app.post("/api/auth/sync", handlers.sync);
+app.get("/api/auth/avatar", handlers.avatar);
+app.post("/api/auth/logout", handlers.logout);
 ```
 
-You can adapt this idea to:
+---
 
-- MongoDB (Mongoose)  
-- SQL (Prisma / Knex)  
-- any other database system  
+## Why `sub` is mandatory (do not use email)
 
-The **flow** is always:
+Email can change. Some users share email. Some lose access.
+If you link by email, you break accounts.
 
-1. read `sub`  
-2. look up a connection row using `sub`  
-3. if found → log in that user  
-4. if not found → create user, create connection, log them in  
+XWMS gives every account a **stable, permanent id** called `sub`.
+
+Always link your local user to `sub`:
+- if you already have it, log in
+- if you do not have it, create a user and store the sub
 
 ---
 
-### 4. What happens step by step
+## Example: Database structure
 
-| Step | Action                           | Description                              |
-| ---- | -------------------------------- | ---------------------------------------- |
-| 1    | User clicks “Login with XWMS”    | You redirect to the XWMS login page      |
-| 2    | XWMS shows its login screen      | User enters username / password there    |
-| 3    | XWMS redirects back with a code  | Only your server can use this code       |
-| 4    | Your app exchanges code for token| You prove your app is allowed to do this |
-| 5    | Your app fetches user info       | You get `sub`, name, email, picture, …   |
-| 6    | You link user by `sub`           | You find or create a local account       |
+Minimal tables:
+
+```
+users
+  id, name, email, picture
+
+xwms_connections
+  id, user_id, sub
+```
+
+This guarantees stable identity even if the user changes email or name.
 
 ---
 
-### 5. Example login button (frontend)
-
-If you have a front‑end (React, Vue, plain HTML), you only need a link:
+## Example login button
 
 ```html
-<a href="http://localhost:3000/login">Login with XWMS</a>
+<a href="/api/auth/login">Login with XWMS</a>
 ```
-
-Clicking it starts the whole flow.
 
 ---
 
-### 6. Debugging Tips
+## Troubleshooting
 
-If something doesn’t work:
-
-- Check your **redirect URI** – it must exactly match what’s set in XWMS.  
-- Log `error.response?.data` when a request fails.  
-- Make sure your `.env` file is loaded (`console.log(process.env.XWMS_CLIENT_ID)` once).  
-- Use fresh codes each time – authorization codes expire quickly.  
+- Check that `XWMS_REDIRECT_URI` matches exactly the callback URL you registered.
+- Log `error.message` or response body from your server if login fails.
+- Ensure your `.env` file is loaded.
+- Tokens are single-use; try again if you already used it.
 
 ---
 
 ## Summary
 
-- XWMS is the “guard” that signs people in for you.  
-- Your Node app redirects people to XWMS, then receives a token back.  
-- You use that token to fetch user info, including the **stable `sub` id**.  
-- You store and use `sub` to link to your own users – **not** the email address.  
-
-This gives you a professional, robust login system that keeps working  
-even when people change their email or name.
-
+- Use `xwms-package` for JS/Node apps.
+- Redirect with **sign-token**, verify with **sign-token-verify**.
+- Link users by **sub**, not email.
+- Use the Express router to get everything instantly.

@@ -14,6 +14,65 @@ use Illuminate\Support\Str;
 
 class XwmsApiHelper
 {
+    /**
+     * Usage patterns (examples)
+     *
+     * 1) Simple controller login (Laravel)
+     * --------------------------------------------------
+     * Route::get('/xwms/auth', [XwmsApiHelper::class, 'auth']);
+     * Route::get('/xwms/validateToken', [HomeController::class, 'authValidate']);
+     *
+     * public function authValidate()
+     * {
+     *     $result = XwmsApiHelper::authenticateAndSyncUser();
+     *     if (($result['status'] ?? null) !== 'success') {
+     *         return redirect()->route('login');
+     *     }
+     *     return redirect()->route('dashboard');
+     * }
+     *
+     * 2) Custom user model + connection model
+     * --------------------------------------------------
+     * XwmsApiHelper::authenticateAndSyncUser([
+     *     'create_user' => true,
+     *     'update_existing' => true,
+     *     'link_by_email' => true,
+     *     'login' => true,
+     *     'remember' => true,
+     *     'field_map' => [
+     *         'name' => 'name',
+     *         'email' => 'email',
+     *         'img' => 'picture',
+     *     ],
+     * ]);
+     *
+     * 3) Disable auto login (manual session)
+     * --------------------------------------------------
+     * $result = XwmsApiHelper::authenticateAndSyncUser([
+     *     'login' => false,
+     *     'remember' => false,
+     * ]);
+     * // your session logic here
+     *
+     * 4) Sync logged-in user later
+     * --------------------------------------------------
+     * $result = XwmsApiHelper::syncAuthenticatedUserFromXwms([
+     *     'image_sync' => [
+     *         'enabled' => true,
+     *         'disk' => 'public',
+     *         'directory' => 'users/xwms',
+     *         'delete_old' => true,
+     *     ],
+     * ]);
+     *
+     * 5) Use custom auth payload for token verify
+     * --------------------------------------------------
+     * XwmsApiHelper::authenticateAndSyncUser([
+     *     'auth_payload' => [
+     *         'extra' => 'value',
+     *     ],
+     * ]);
+     */
     private static string|null $clientId = null;
     private static string|null $clientSecret = null;
     private static string|null $clientDomain = null;
