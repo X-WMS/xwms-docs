@@ -1,7 +1,7 @@
 {
   "name": "xwms-package",
-  "version": "0.1.0",
-  "description": "XWMS JavaScript / Node.js package",
+  "version": "1.0.0",
+  "description": "XWMS JavaScript / Node.js SDK",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "@types/node": "^22.2.0"
   }
 }
