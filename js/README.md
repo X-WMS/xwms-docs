@@ -27,6 +27,18 @@ const { redirectUrl } = await xwms.authenticateUser();
 const response = await xwms.verifyToken(token);
 ```
 
+## Global + User API helpers
+```js
+// Global
+const info = await xwms.getGlobalInfo();
+const countries = await xwms.getCountries();
+const projects = await xwms.getProjects();
+
+// User (requires scopes + user sub)
+const userInfo = await xwms.getUserInfo(sub, { socials: true });
+const addresses = await xwms.userAddressCrud(sub, "list");
+```
+
 ## Sync user with your DB
 ```js
 import { authenticateAndSyncUser, createNodeStorage } from "xwms-package";

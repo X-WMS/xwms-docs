@@ -156,11 +156,36 @@ export class XwmsClient {
     return this.get("info");
   }
 
+  async getGlobalInfo(): Promise<XwmsResponse> {
+    return this.get("info");
+  }
+
+  async getCountries(payload: Record<string, any> = {}): Promise<XwmsResponse> {
+    return this.post("global/countries", payload);
+  }
+
+  async getProjects(): Promise<XwmsResponse> {
+    return this.get("global/projects");
+  }
+
   async getUserAddress(sub: string | number, payload: Record<string, any> = {}): Promise<XwmsResponse> {
     return this.post("get/user/address", { sub: Number(sub), ...payload });
   }
 
   async getUserInfo(sub: string | number, payload: Record<string, any> = {}): Promise<XwmsResponse> {
     return this.post("get/user/info", { sub: Number(sub), ...payload });
+  }
+
+  async userAddressCrud(
+    sub: string | number,
+    action: "list" | "create" | "update" | "delete",
+    options: { addressId?: number; address?: Record<string, any> } = {}
+  ): Promise<XwmsResponse> {
+    return this.post("user/address", {
+      sub: Number(sub),
+      action,
+      address_id: options.addressId,
+      address: options.address,
+    });
   }
 }

@@ -231,6 +231,29 @@ class XwmsApiHelper
         return $response;
     }
 
+    public static function getCountries(array $data = []): array
+    {
+        self::setup();
+        return (array) self::postToEndpoint("global/countries", $data);
+    }
+
+    public static function getProjects(array $data = []): array
+    {
+        self::setup();
+        return (array) self::getFromEndpoint("global/projects", $data);
+    }
+
+    public static function userAddressCrud(string|int $sub, string $action, array $data = []): array
+    {
+        self::setup();
+        $payload = array_merge([
+            'sub' => (int) $sub,
+            'action' => $action,
+        ], $data);
+
+        return (array) self::postToEndpoint("user/address", $payload);
+    }
+
     protected static function ensureXwmsConnectionTable(): void
     {
         $connectionClass = self::resolveModelClass('XwmsConnection', '\\XWMS\\Package\\Models\\XwmsConnection');

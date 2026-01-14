@@ -288,6 +288,26 @@ class XwmsApiHelperPHP
         return $this->postToEndpoint("get/user/info", array_merge(['sub' => (int) $sub], $data));
     }
 
+    public function getCountries(array $data = []): array
+    {
+        return $this->postToEndpoint("global/countries", $data);
+    }
+
+    public function getProjects(array $data = []): array
+    {
+        return $this->getFromEndpoint("global/projects", $data);
+    }
+
+    public function userAddressCrud(string|int $sub, string $action, array $data = []): array
+    {
+        $payload = array_merge([
+            'sub' => (int) $sub,
+            'action' => $action,
+        ], $data);
+
+        return $this->postToEndpoint("user/address", $payload);
+    }
+
     public function auth(): void
     {
         $this->authenticateUser([
