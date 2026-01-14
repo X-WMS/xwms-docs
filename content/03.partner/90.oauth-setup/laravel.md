@@ -68,7 +68,7 @@ For a full explanation, keep reading.
 
 ---
 
-## 🧠 Full Installation – Explained Like You’re 10
+## 🧠 Full Installation
 
 ### 1. Think of XWMS Like a Friendly Gatekeeper
 
